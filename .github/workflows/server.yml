@@ -23,16 +23,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Remove Top Level package.json
-        run: rm ../../package.json
-
       - name: Setup NodeJS
         uses: actions/setup-node@v3
         with:
           node-version: 16
 
       - name: NPM Install
-        run: npm install --only-dev
+        run: npm install
         shell: bash
 
       - name: Lint
@@ -51,16 +48,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Remove Top Level package.json
-        run: rm ../../package.json
-
       - name: Setup NodeJS
         uses: actions/setup-node@v3
         with:
           node-version: 16
 
       - name: NPM Install
-        run: npm install --only-dev
+        run: npm install
         shell: bash
 
       - name: Build
@@ -75,9 +69,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-
-      - name: Remove Top Level package.json
-        run: rm ../../package.json
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
