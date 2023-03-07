@@ -6,11 +6,11 @@ on:
       - 'packages/server/**'
     branches:
       - main
-    pull_request:
-      paths:
-        - 'packages/server/**'
-      branches:
-        - main
+  pull_request:
+    paths:
+      - 'packages/server/**'
+    branches:
+      - main
 
 jobs:
   lint:

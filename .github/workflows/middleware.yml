@@ -6,11 +6,11 @@ on:
       - 'packages/middleware/**'
     branches:
       - main
-    pull_request:
-      paths:
-        - 'packages/middleware/**'
-      branches:
-        - main
+  pull_request:
+    paths:
+      - 'packages/middleware/**'
+    branches:
+      - main
 
 jobs:
   lint:
