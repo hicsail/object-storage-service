@@ -1,0 +1,19 @@
+version: '2'
+services:
+  mongo:
+    image: mongo
+    ports: ["27024:27017"]
+    restart: "always"
+    volumes:
+      - cargo-staging:/data/db
+  signlab:
+    image: hicsail/cargo:unstable
+    restart: always
+    depends_on:
+      - mongo
+    ports: ["3006:3000"]
+    env_file:
+      - stack.env
+volumes:
+  cargo-staging:
+    external: true
