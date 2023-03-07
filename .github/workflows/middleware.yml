@@ -1,14 +1,14 @@
-name: cargo-client
+name: cargo-middleware
 on:
   workflow_dispatch:
   push:
     paths:
-      - 'packages/client/**'
+      - 'packages/middleware/**'
     branches:
       - main
     pull_request:
       paths:
-        - 'packages/client/**'
+        - 'packages/middleware/**'
       branches:
         - main
 
@@ -18,7 +18,7 @@ jobs:
     name: Checking Lint and Prettier
     defaults:
       run:
-        working-directory: packages/client
+        working-directory: packages/middleware
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -46,7 +46,7 @@ jobs:
     name: Build Code
     defaults:
       run:
-        working-directory: packages/client
+        working-directory: packages/middleware
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
