@@ -13,8 +13,8 @@ export class Permissions {
   user: string;
 
   @Prop()
-  @Field(() => ID, { description: 'Project ID of the user from the Auth microservice' })
-  project: string;
+  @Field(() => ID, { description: 'The bucket that the user permission is on' })
+  bucket: string;
 
   @Prop()
   @Field({ description: 'If the user has read access to the bucket' })

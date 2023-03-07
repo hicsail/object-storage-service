@@ -8,8 +8,8 @@ type Permissions {
   """ID of the user from the Auth microservice"""
   user: ID!
 
-  """Project ID of the user from the Auth microservice"""
-  project: ID!
+  """The bucket that the user permission is on"""
+  bucket: ID!
 
   """If the user has read access to the bucket"""
   read: Boolean!
@@ -24,7 +24,25 @@ type Permissions {
   admin: Boolean!
 }
 
+"""Keeps track of the buckets that belong to a project"""
+type Project {
+  _id: ID!
+
+  """Auth microservice project ID"""
+  project: ID!
+
+  """List of buckets that belong to the project"""
+  buckets: [String!]!
+}
+
 type Query {
-  hello: String!
-  getPermissions: Permissions!
+  """Get all permissions for the user based on the user's project"""
+  getPermissions: [Permissions!]!
+  getBucketsForProject(project: String!): [String!]!
+}
+
+type Mutation {
+  addUser(user: String!, project: String!): [Permissions!]!
+  createProject(project: String!): Project!
+  addBucketToProject(project: String!, bucket: String!): Project!
 }

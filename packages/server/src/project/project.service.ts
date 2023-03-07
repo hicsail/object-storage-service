@@ -1,4 +1,49 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Injectable, Inject } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { PermService } from '../perms/perms.service';
+import { Project, ProjectDocument } from './project.model';
 
 @Injectable()
-export class ProjectService {}
+export class ProjectService {
+  constructor(@InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
+              @Inject(forwardRef(() => PermService)) private permService: PermService) {}
+
+  async create(project: string): Promise<Project> {
+    const createdProject = new this.projectModel({ project, buckets: [] });
+    return createdProject.save();
+  }
+
+  async getBuckets(project: string): Promise<string[]> {
+    const existingProject = await this.projectModel.findOne({ project });
+    if (!existingProject) {
+      throw new BadRequestException(`Project ${project} does not exist`);
+    }
+    return existingProject.buckets;
+  }
+
+  /**
+   * Add a bucket to a project, will throw an error if the project doesn't
+   * exist or the bucket is already attached to the project
+   */
+  async addBucket(project: string, bucket: string): Promise<Project> {
+    // Get the project, ensure it exists, and the bucket name is unique
+    const existingProject = await this.projectModel.findOne({ project });
+    if (!existingProject) {
+      throw new BadRequestException(`Project ${project} does not exist`);
+    }
+    if (existingProject.buckets.includes(bucket)) {
+      throw new BadRequestException(`Bucket ${bucket} already exists for project ${project}`);
+    }
+
+    // Add the bucket
+    existingProject.buckets.push(bucket);
+    const updatedProject = await existingProject.save();
+
+    // Make new user permissions for the bucket
+    const users = await this.permService.getUsers(bucket);
+    await Promise.all(users.map(user => this.permService.makePermissions(user, bucket)));
+
+    return updatedProject;
+  }
+}
