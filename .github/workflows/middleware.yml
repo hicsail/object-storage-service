@@ -1,0 +1,61 @@
+name: cargo-middleware
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'packages/middleware/**'
+    branches:
+      - main
+  pull_request:
+    paths:
+      - 'packages/middleware/**'
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Checking Lint and Prettier
+    defaults:
+      run:
+        working-directory: packages/middleware
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: NPM Install
+        run: npm install
+        shell: bash
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Prettier
+        run: npm run prettier
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build Code
+    defaults:
+      run:
+        working-directory: packages/middleware
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: NPM Install
+        run: npm install
+        shell: bash
+
+      - name: Build
+        run: npm run build

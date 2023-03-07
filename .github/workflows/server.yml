@@ -1,0 +1,107 @@
+name: cargo-server
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'packages/server/**'
+    branches:
+      - main
+    tags:
+      - "v*.*.*"
+  pull_request:
+    paths:
+      - 'packages/server/**'
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Checking Lint and Prettier
+    defaults:
+      run:
+        working-directory: packages/server
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: NPM Install
+        run: npm install
+        shell: bash
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Prettier
+        run: npm run prettier
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build Code
+    defaults:
+      run:
+        working-directory: packages/server
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: NPM Install
+        run: npm install
+        shell: bash
+
+      - name: Build
+        run: npm run build
+
+  docker-build:
+    runs-on: ubuntu-latest
+    name: Docker Build (and Deploy)
+    defaults:
+      run:
+        working-directory: packages/server
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Docker Tags
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: hicsail/cargo
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push Docker Build
+        uses: docker/build-push-action@v4
+        with:
+          context: ./packages/server
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Push to Staging
+        uses: fjogeleit/http-request-action@v1
+        if: github.ref == 'refs/heads/main'
+        with:
+          method: "POST"
+          url: ${{ secrets.PORTAINER_WEBHOOK }}
+          preventFailureOnNoResponse: true
