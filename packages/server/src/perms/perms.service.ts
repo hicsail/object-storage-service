@@ -38,6 +38,10 @@ export class PermService {
     return await Promise.all(buckets.map(bucket => this.makePermissions(user, bucket)));
   }
 
+  async getPermissionsForBucket(user: string, bucket: string): Promise<Permissions | null> {
+    return this.permsModel.findOne({ user: user, bucket: bucket }).exec();
+  }
+
   /**
    * Make permissions for the given user for the given bucket. Defaults to
    * no access
