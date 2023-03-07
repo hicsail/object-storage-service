@@ -1,0 +1,29 @@
+{
+  "name": "@hicsail/cargo",
+  "version": "0.0.1",
+  "description": "Microservice which provides a user permission system ontop of an S3 compatible storage bucket",
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "prettier": "npm run prettier --workspaces --if-present",
+    "prettier:fix": "npm run prettier:fix --workspaces --if-present",
+    "start": "npm run start --workspaces --if-present",
+    "start:dev": "npm run start:dev --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "lint:fix": "npm run lint:fix --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "workspaces": [
+    "./packages/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hicsail/object-storage-service.git"
+  },
+  "author": "Boston University Software & Application Innovation Lab <hicsail@bu.edu> (https://sail.bu.edu/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hicsail/object-storage-service/issues"
+  },
+  "homepage": "https://github.com/hicsail/object-storage-service#readme",
+  "type": "module"
+}
