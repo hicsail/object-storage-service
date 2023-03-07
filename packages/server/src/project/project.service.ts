@@ -38,12 +38,13 @@ export class ProjectService {
 
     // Add the bucket
     existingProject.buckets.push(bucket);
-    console.log(existingProject);
-    const updatedProject = await this.projectModel.findOneAndUpdate({ project }, existingProject, { new: false });
+    await this.projectModel.findOneAndUpdate({ project }, existingProject, { new: false });
 
     // Make new user permissions for the bucket
-    const users = await this.permService.getUsers(bucket);
-    await Promise.all(users.map(user => this.permService.makePermissions(user, bucket)));
+    if (existingProject.buckets.length > 0) {
+      const users = await this.permService.getUsers(existingProject.buckets[0]);
+      await Promise.all(users.map(user => this.permService.makePermissions(user, bucket)));
+    }
 
     return existingProject;
   }
