@@ -15,7 +15,7 @@ import { AuthService } from './auth.service';
         return {
           publicKey: await authService.getPublicKey(),
           signOptions: {
-            algorithm: 'RS256',
+            algorithm: 'RS256'
           }
         };
       }

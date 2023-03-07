@@ -6,8 +6,10 @@ import { ProjectService } from '../project/project.service';
 
 @Injectable()
 export class PermService {
-  constructor(@InjectModel(Permissions.name) private readonly permsModel: Model<PermissionsDocument>,
-              private readonly projectService: ProjectService) {}
+  constructor(
+    @InjectModel(Permissions.name) private readonly permsModel: Model<PermissionsDocument>,
+    private readonly projectService: ProjectService
+  ) {}
 
   /**
    * Get the permissions currently stored for the given user based on the
@@ -23,7 +25,7 @@ export class PermService {
    */
   async getUsers(bucket: string): Promise<string[]> {
     const perms = await this.permsModel.find({ bucket: bucket }).exec();
-    return perms.map(perm => perm.user);
+    return perms.map((perm) => perm.user);
   }
 
   /** Add a user to the system, create permissions for all buckets related to the user's project */
@@ -35,7 +37,7 @@ export class PermService {
     }
 
     const buckets = await this.projectService.getBuckets(project);
-    return await Promise.all(buckets.map(bucket => this.makePermissions(user, bucket)));
+    return await Promise.all(buckets.map((bucket) => this.makePermissions(user, bucket)));
   }
 
   async getPermissionsForBucket(user: string, bucket: string): Promise<Permissions | null> {
@@ -56,5 +58,4 @@ export class PermService {
       admin: false
     });
   }
-
 }

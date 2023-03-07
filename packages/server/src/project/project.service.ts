@@ -6,8 +6,10 @@ import { Project, ProjectDocument } from './project.model';
 
 @Injectable()
 export class ProjectService {
-  constructor(@InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
-              @Inject(forwardRef(() => PermService)) private permService: PermService) {}
+  constructor(
+    @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
+    @Inject(forwardRef(() => PermService)) private permService: PermService
+  ) {}
 
   async create(project: string): Promise<Project> {
     const createdProject = new this.projectModel({ project, buckets: [] });
@@ -43,7 +45,7 @@ export class ProjectService {
     // Make new user permissions for the bucket
     if (existingProject.buckets.length > 0) {
       const users = await this.permService.getUsers(existingProject.buckets[0]);
-      await Promise.all(users.map(user => this.permService.makePermissions(user, bucket)));
+      await Promise.all(users.map((user) => this.permService.makePermissions(user, bucket)));
     }
 
     return existingProject;

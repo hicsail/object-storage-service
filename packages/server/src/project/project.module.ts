@@ -6,10 +6,7 @@ import { ProjectResolver } from './project.resolver';
 import { PermsModule } from '../perms/perms.module';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]),
-    forwardRef(() => PermsModule)
-  ],
+  imports: [MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]), forwardRef(() => PermsModule)],
   providers: [ProjectService, ProjectResolver],
   exports: [ProjectService]
 })
