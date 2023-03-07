@@ -7,7 +7,7 @@ services:
     volumes:
       - cargo-staging:/data/db
   signlab:
-    image: hicsail/cargo:unstable
+    image: hicsail/cargo:main
     restart: always
     depends_on:
       - mongo
