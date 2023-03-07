@@ -1,4 +1,4 @@
-name: cargo-client
+name: cargo-server
 on:
   workflow_dispatch:
   push:
@@ -71,7 +71,7 @@ jobs:
     name: Docker Build (and Deploy)
     defaults:
       run:
-        working
+        working-directory: packages/server
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
