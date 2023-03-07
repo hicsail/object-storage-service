@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Permissions, PermissionsDocument } from './perms.model';
-import { User } from '../auth/user.dto';
 import { ProjectService } from '../project/project.service';
 
 @Injectable()
@@ -14,10 +13,9 @@ export class PermService {
    * Get the permissions currently stored for the given user based on the
    * buckets stored for the given project the user is a part of.
    */
-  async getPermissions(user: User): Promise<Permissions[]> {
+  async getPermissions(user: string): Promise<Permissions[]> {
     // Find current permissions
-    const buckets = await this.projectService.getBuckets(user.projectId);
-    return await this.permsModel.find({ user: user.id, bucket: { $in: buckets } }).exec();
+    return this.permsModel.find({ user: user }).exec();
   }
 
   /**
@@ -28,8 +26,14 @@ export class PermService {
     return perms.map(perm => perm.user);
   }
 
-  /** Add a user to the system, create permissions for all buckets */
+  /** Add a user to the system, create permissions for all buckets related to the user's project */
   async addUser(user: string, project: string) {
+    // Make sure the user doesn't already exist
+    const existingUser = await this.permsModel.findOne({ user: user });
+    if (existingUser) {
+      throw new BadRequestException(`User ${user} already exists`);
+    }
+
     const buckets = await this.projectService.getBuckets(project);
     return await Promise.all(buckets.map(bucket => this.makePermissions(user, bucket)));
   }
