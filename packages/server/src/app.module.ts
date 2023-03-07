@@ -6,10 +6,14 @@ import configuration from './config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver } from '@nestjs/apollo';
+import { AuthModule } from './auth/auth.module';
+import { ProjectModule } from './project/project.module';
 
 @Module({
   imports: [
     PermsModule,
+    AuthModule,
+    ProjectModule,
     ConfigModule.forRoot({
       load: [configuration]
     }),

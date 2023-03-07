@@ -2,6 +2,29 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Permissions {
+  _id: ID!
+
+  """ID of the user from the Auth microservice"""
+  user: ID!
+
+  """Project ID of the user from the Auth microservice"""
+  project: ID!
+
+  """If the user has read access to the bucket"""
+  read: Boolean!
+
+  """If the user has write access to the bucket"""
+  write: Boolean!
+
+  """If the user can delete objects in the bucket"""
+  delete: Boolean!
+
+  """If the user can modify permissions on the bucket"""
+  admin: Boolean!
+}
+
 type Query {
   hello: String!
+  getPermissions: Permissions!
 }

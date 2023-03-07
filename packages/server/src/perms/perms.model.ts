@@ -8,28 +8,28 @@ export class Permissions {
   @Field(() => ID)
   _id: mongoose.Types.ObjectId;
 
-  @Prop({ description: 'ID of the user from the Auth microservice' })
-  @Field(() => ID)
+  @Prop()
+  @Field(() => ID, { description: 'ID of the user from the Auth microservice' })
   user: string;
 
-  @Prop({ description: 'Project ID of the user from the Auth microservice' })
-  @Field(() => ID)
+  @Prop()
+  @Field(() => ID, { description: 'Project ID of the user from the Auth microservice' })
   project: string;
 
-  @Prop({ description: 'If the user has read access to the bucket' })
-  @Field()
+  @Prop()
+  @Field({ description: 'If the user has read access to the bucket' })
   read: boolean;
 
-  @Prop({ description: 'If the user has write access to the bucket' })
-  @Field()
+  @Prop()
+  @Field({ description: 'If the user has write access to the bucket' })
   write: boolean;
 
-  @Prop({ description: 'If the user can delete objects in the bucket' })
-  @Field()
+  @Prop()
+  @Field({ description: 'If the user can delete objects in the bucket' })
   delete: boolean;
 
-  @Prop({ description: 'If the user can modify permissions on the bucket' })
-  @Field()
+  @Prop()
+  @Field({ description: 'If the user can modify permissions on the bucket' })
   admin: boolean;
 }
 

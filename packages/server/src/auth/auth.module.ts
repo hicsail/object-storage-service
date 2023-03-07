@@ -21,6 +21,18 @@ import { AuthService } from './auth.service';
       }
     })
   ],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard]
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard,
+    {
+      provide: JwtStrategy,
+      inject: [AuthService],
+      useFactory: async (authService: AuthService) => {
+        return new JwtStrategy(await authService.getPublicKey());
+      }
+    }
+  ],
+  exports: [AuthService]
 })
 export class AuthModule {}
