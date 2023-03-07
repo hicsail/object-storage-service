@@ -9,7 +9,7 @@ type Permissions {
   user: ID!
 
   """The bucket that the user permission is on"""
-  bucket: ID!
+  bucket: String!
 
   """If the user has read access to the bucket"""
   read: Boolean!

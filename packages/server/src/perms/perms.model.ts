@@ -13,7 +13,7 @@ export class Permissions {
   user: string;
 
   @Prop()
-  @Field(() => ID, { description: 'The bucket that the user permission is on' })
+  @Field(() => String, { description: 'The bucket that the user permission is on' })
   bucket: string;
 
   @Prop()
