@@ -2,7 +2,8 @@
   "name": "@hicsail/cargo-middleware",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist",
+  "types": "dist",
   "scripts": {
     "build": "tsc",
     "prettier:fix": "prettier --write \"src/**/*.ts\"",
