@@ -35,12 +35,38 @@ type Project {
   buckets: [String!]!
 }
 
+type SignedReqeuest {
+  """AWS Signature based on the request"""
+  signature: String!
+
+  """SHA256 Hashed Body"""
+  bodyHash: String!
+}
+
 type Query {
   """Get all permissions for the user based on the user's project"""
   getPermissions(user: String!): [Permissions!]!
   getPermissionsForBucket(user: String!, bucket: String!): Permissions!
   getBucketsForProject(project: String!): [String!]!
+  signRequest(request: ResourceRequest!): SignedReqeuest!
 }
+
+"""Wrapper for AWS HttpRequest"""
+input ResourceRequest {
+  method: String!
+  protocol: String!
+  hostname: String!
+  port: Float
+  path: String!
+  query: JSON!
+  headers: JSON!
+  body: JSON
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
 
 type Mutation {
   addUser(user: String!, project: String!): [Permissions!]!

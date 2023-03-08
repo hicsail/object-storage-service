@@ -14,7 +14,7 @@ export class ResourceRequest implements HttpRequest {
   @Field()
   hostname: string;
 
-  @Field()
+  @Field({ nullable: true })
   port?: number;
 
   @Field()
@@ -26,8 +26,8 @@ export class ResourceRequest implements HttpRequest {
   @Field(() => JSON)
   headers: HeaderBag;
 
-  @Field(() => JSON)
-  body: any;
+  @Field(() => JSON, { nullable: true })
+  body?: any;
 
   // NOTE: This is just here to allow for implementation of the HttpRequest
   // and ensure that the other fields are included properly
