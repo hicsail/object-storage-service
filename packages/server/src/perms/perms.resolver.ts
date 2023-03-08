@@ -29,7 +29,11 @@ export class PermsResolver {
   }
 
   @Mutation(() => Permissions)
-  async changePermissions(@Args('change') change: PermissionChange, @Args('user') user: string, @Args('bucket') bucket: string): Promise<Permissions> {
+  async changePermissions(
+    @Args('change') change: PermissionChange,
+    @Args('user') user: string,
+    @Args('bucket') bucket: string
+  ): Promise<Permissions> {
     const newPerms = await this.permsService.changePermissions(user, bucket, change);
     if (!newPerms) {
       throw new BadRequestException(`User ${user} does not have permissions for bucket ${bucket}`);
