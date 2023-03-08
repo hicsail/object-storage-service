@@ -2,6 +2,7 @@ import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { Permissions } from './perms.model';
 import { PermService } from './perms.service';
 import { BadRequestException } from '@nestjs/common';
+import { PermissionChange } from './perms.dto';
 
 @Resolver(() => Permissions)
 export class PermsResolver {
@@ -25,5 +26,14 @@ export class PermsResolver {
       throw new BadRequestException(`User ${user} does not have permissions for bucket ${bucket}`);
     }
     return permissions;
+  }
+
+  @Mutation(() => Permissions)
+  async changePermissions(@Args('change') change: PermissionChange, @Args('user') user: string, @Args('bucket') bucket: string): Promise<Permissions> {
+    const newPerms = await this.permsService.changePermissions(user, bucket, change);
+    if (!newPerms) {
+      throw new BadRequestException(`User ${user} does not have permissions for bucket ${bucket}`);
+    }
+    return newPerms;
   }
 }

@@ -44,6 +44,15 @@ type Query {
 
 type Mutation {
   addUser(user: String!, project: String!): [Permissions!]!
-  createProject(project: String!): Project!
+  changePermissions(change: PermissionChange!, user: String!, bucket: String!): Permissions!
+
+  """Add a bucket to a project, if the project is new it will be created"""
   addBucketToProject(project: String!, bucket: String!): Project!
+}
+
+input PermissionChange {
+  read: Boolean!
+  write: Boolean!
+  delete: Boolean!
+  admin: Boolean!
 }

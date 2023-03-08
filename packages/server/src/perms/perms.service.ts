@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Permissions, PermissionsDocument } from './perms.model';
 import { ProjectService } from '../project/project.service';
+import { PermissionChange } from './perms.dto';
 
 @Injectable()
 export class PermService {
@@ -57,5 +58,9 @@ export class PermService {
       delete: false,
       admin: false
     });
+  }
+
+  async changePermissions(user: string, bucket: string, perms: PermissionChange): Promise<Permissions | null> {
+    return this.permsModel.findOneAndUpdate({ user: user, bucket: bucket }, perms, { new: true }).exec();
   }
 }

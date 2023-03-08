@@ -30,9 +30,9 @@ export class ProjectService {
    */
   async addBucket(project: string, bucket: string): Promise<Project> {
     // Get the project, ensure it exists, and the bucket name is unique
-    const existingProject = await this.projectModel.findOne({ project });
+    let existingProject: Project | null = await this.projectModel.findOne({ project }).exec();
     if (!existingProject) {
-      throw new BadRequestException(`Project ${project} does not exist`);
+      existingProject = await this.create(project);
     }
     if (existingProject.buckets.includes(bucket)) {
       throw new BadRequestException(`Bucket ${bucket} already exists for project ${project}`);

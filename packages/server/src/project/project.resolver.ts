@@ -6,13 +6,7 @@ import { ProjectService } from './project.service';
 export class ProjectResolver {
   constructor(private readonly projectService: ProjectService) {}
 
-  @Mutation(() => Project)
-  createProject(@Args('project') project: string) {
-    // TODO: Validate that the project does exist against the auth microservice
-    return this.projectService.create(project);
-  }
-
-  @Mutation(() => Project)
+  @Mutation(() => Project, { description: 'Add a bucket to a project, if the project is new it will be created' })
   addBucketToProject(@Args('project') project: string, @Args('bucket') bucket: string) {
     return this.projectService.addBucket(project, bucket);
   }
