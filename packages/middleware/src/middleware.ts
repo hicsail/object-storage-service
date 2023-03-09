@@ -1,21 +1,48 @@
 import { awsAuthMiddlewareOptions } from '@aws-sdk/middleware-signing';
 import { S3MiddlewareType, S3MiddlewareStack } from './s3types';
-import { ApolloClient, InMemoryCache, HttpLink, gql } from '@apollo/client/core';
+import { ApolloClient, InMemoryCache, HttpLink, gql, NormalizedCacheObject } from '@apollo/client/core';
 import fetch from 'cross-fetch';
+import { setContext } from '@apollo/client/link/context';
 
 export interface CargoMiddlewareConfig {
   /** The Cargo Server to sign against */
   cargoEndpoint: string;
+  /** Function that produces the JWT token */
+  jwtTokenProvider: () => Promise<string>;
 }
+
+const getApolloClient: (config: CargoMiddlewareConfig) => ApolloClient<NormalizedCacheObject> = (config) => {
+  const httpLink = new HttpLink({
+    uri: config.cargoEndpoint,
+    fetch,
+  });
+
+  // Auth link allows grabbing the JWT from the provider. Since this is called
+  // on every request, the JWT can be refreshed as needed.
+  const authLink = setContext(async (_, { headers }) => {
+    // Get the token from the provider
+    const token = await config.jwtTokenProvider();
+
+    return {
+      headers: {
+        ...headers,
+        authorization: `Bearer ${token}`,
+      },
+    };
+  });
+
+  return new ApolloClient({
+    link: authLink.concat(httpLink),
+    cache: new InMemoryCache(),
+  });
+}
+
 
 /**
  * Make the middleware based on the provided configuration
  */
 const makeMiddleware: (config: CargoMiddlewareConfig) => S3MiddlewareType = (config) => {
-  const apolloClient = new ApolloClient({
-    cache: new InMemoryCache(),
-    link: new HttpLink({ uri: config.cargoEndpoint, fetch })
-  });
+  const apolloClient = getApolloClient(config);
 
   return (next: any) => async (args: any) => {
     const query = gql`
