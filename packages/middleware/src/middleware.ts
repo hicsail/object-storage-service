@@ -15,7 +15,7 @@ export interface CargoMiddlewareConfig {
 const getApolloClient: (config: CargoMiddlewareConfig) => ApolloClient<NormalizedCacheObject> = (config) => {
   const httpLink = new HttpLink({
     uri: config.cargoEndpoint,
-    fetch,
+    fetch
   });
 
   // Auth link allows grabbing the JWT from the provider. Since this is called
@@ -27,16 +27,16 @@ const getApolloClient: (config: CargoMiddlewareConfig) => ApolloClient<Normalize
     return {
       headers: {
         ...headers,
-        authorization: `Bearer ${token}`,
-      },
+        authorization: `Bearer ${token}`
+      }
     };
   });
 
   return new ApolloClient({
     link: authLink.concat(httpLink),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache()
   });
-}
+};
 
 /** Make the middleware based on the provided configuration */
 const makeMiddleware: (config: CargoMiddlewareConfig) => S3MiddlewareType = (config) => {
