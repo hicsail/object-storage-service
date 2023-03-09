@@ -4,6 +4,7 @@ import { ApolloClient, InMemoryCache, HttpLink, gql, NormalizedCacheObject } fro
 import fetch from 'cross-fetch';
 import { setContext } from '@apollo/client/link/context';
 
+/** Used to setup the Cargo Middleware */
 export interface CargoMiddlewareConfig {
   /** The Cargo Server to sign against */
   cargoEndpoint: string;
@@ -37,10 +38,7 @@ const getApolloClient: (config: CargoMiddlewareConfig) => ApolloClient<Normalize
   });
 }
 
-
-/**
- * Make the middleware based on the provided configuration
- */
+/** Make the middleware based on the provided configuration */
 const makeMiddleware: (config: CargoMiddlewareConfig) => S3MiddlewareType = (config) => {
   const apolloClient = getApolloClient(config);
 
