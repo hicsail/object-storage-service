@@ -1,0 +1,58 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Permissions {
+  _id: ID!
+
+  """ID of the user from the Auth microservice"""
+  user: ID!
+
+  """The bucket that the user permission is on"""
+  bucket: String!
+
+  """If the user has read access to the bucket"""
+  read: Boolean!
+
+  """If the user has write access to the bucket"""
+  write: Boolean!
+
+  """If the user can delete objects in the bucket"""
+  delete: Boolean!
+
+  """If the user can modify permissions on the bucket"""
+  admin: Boolean!
+}
+
+"""Keeps track of the buckets that belong to a project"""
+type Project {
+  _id: ID!
+
+  """Auth microservice project ID"""
+  project: ID!
+
+  """List of buckets that belong to the project"""
+  buckets: [String!]!
+}
+
+type Query {
+  """Get all permissions for the user based on the user's project"""
+  getPermissions(user: String!): [Permissions!]!
+  getPermissionsForBucket(user: String!, bucket: String!): Permissions!
+  getBucketsForProject(project: String!): [String!]!
+}
+
+type Mutation {
+  addUser(user: String!, project: String!): [Permissions!]!
+  changePermissions(change: PermissionChange!, user: String!, bucket: String!): Permissions!
+
+  """Add a bucket to a project, if the project is new it will be created"""
+  addBucketToProject(project: String!, bucket: String!): Project!
+}
+
+input PermissionChange {
+  read: Boolean!
+  write: Boolean!
+  delete: Boolean!
+  admin: Boolean!
+}

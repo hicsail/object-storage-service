@@ -1,73 +1,73 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Cargo Server
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Running the Project
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+### Configuration
 
-## Description
+For configurable settings, please see `src/config/configuration.ts` for the supported settings and their corresponding environment variable.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Running in Development
 
-## Installation
+1. Start an instance of MongoDB
+2. Run the command `npm run start:dev`
 
-```bash
-$ npm install
+## Example Procedures
+
+The Cargo server supported interactions via GraphQL. Below are example workflows shown for a high level. For specifics on how to perform the actions show, refer to the GraphQL documentation. In the diagrams below, "Client" refers to the software interacting with the Cargo Server. This should typically be either the Cargo Middleware or Cargo Client.
+
+:warning: Developer note, the function names shown in the diagrams are to illustrate the operations taking place. They are not the actual function names
+
+### Adding a Bucket to the Server
+
+The server maintains a list of supported projects and the buckets contained in that project. See `src/project/project.model.ts` for more information on what is stored. When a request is made to add a bucket to a project not yet stored in the system, an entry for that project will be added.
+
+```mermaid
+sequenceDiagram
+Client ->> Cargo Server: addBucket(projectId, bucketName)
+Cargo Server ->> Cargo Server: getProjectOrCreate(projectId)
+Cargo Server ->> Cargo Server: addBucketToProject(projectId, bucketName)
+Cargo Server ->> Cargo Server: addUserPermissionsForBucket(usersInProject, bucket)
+Cargo Server -->> Client: project
 ```
 
-## Running the app
+Something to note, the Cargo Server itself is not creating a new bucket. The Cargo Server merely maintains user permissions for a bucket and nothing more. The bucket itself can be created in the S3 instance either before or after updating the Cargo Server. Ideally the Cargo Server would be updated after to ensure the bucket is created successfully.
 
-```bash
-# development
-$ npm run start
+Additionally, when a new bucket is added, users in Cargo Server who are associated with the given project will automatically have User Permissions generated for them (with no actual access granted) so that you can immediately query user permissions for that new bucket.
 
-# watch mode
-$ npm run start:dev
+### Adding a User to the Server
 
-# production mode
-$ npm run start:prod
+Adding a user will automatically populate user permissions for all buckets in the user's corresponding project. The user will be granted no actual access so the correct permissions will need to be added later. 
+
+```mermaid
+sequenceDiagram
+Client ->> Cargo Server: addUser(userId, projectId)
+Cargo Server ->> Cargo Server: addUserPermissionsForProject(userId, projectId)
+Cargo Server -->> Client: permissions[]
 ```
 
-## Test
+The client will get back the list of permissions that were generated for the user.
 
-```bash
-# unit tests
-$ npm run test
+### Getting Permissions
 
-# e2e tests
-$ npm run test:e2e
+The client can request permissions in a couple of different contexts. The client can either get the permissions for a single user on a single bucket, or they can get all user permissions for a given user.
 
-# test coverage
-$ npm run test:cov
+```mermaid
+sequenceDiagram
+Client ->> Cargo Server: getPermissions(userId)
+Cargo Server -->> Client: permisisons[]
+Client ->> Cargo Server: getPermissionsForBucket(userId, bucketName)
+Cargo Server -->> Client: permissions
 ```
 
-## Support
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-## Stay in touch
+### Updating Permissions
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+The client can update the permissions by providing the permissions for a user and bucket.
 
-## License
+```mermaid
+sequenceDiagram
+Client ->> Cargo Server: changePermissions(change, userId, bucket)
+Cargo Server -->> Client: newPermissions
+```
 
-Nest is [MIT licensed](LICENSE).
