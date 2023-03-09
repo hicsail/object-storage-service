@@ -15,7 +15,8 @@ import { SignModule } from './sign/sign.module';
     ProjectModule,
     SignModule,
     ConfigModule.forRoot({
-      load: [configuration]
+      load: [configuration],
+      isGlobal: true
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
