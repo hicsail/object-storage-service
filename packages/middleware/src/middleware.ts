@@ -19,15 +19,14 @@ const makeMiddleware: (config: CargoMiddlewareConfig) => S3MiddlewareType = (con
 
   // TODO: Determing typing for next and args
   return (next: any) => async (args: any) => {
-    console.log('hello');
-
     const query = gql`
       query signRequest($request: ResourceRequest!) {
         signRequest(request: $request) {
           signature,
           bodyHash
         }
-      }`;
+      }
+    `;
 
     const response = await apolloClient.query({ query, variables: { request: args.request } });
     const { signature, bodyHash } = response.data.signRequest;
