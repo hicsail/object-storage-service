@@ -13,7 +13,7 @@ export class SignService {
     this.signer = new SignatureV4({
       credentials: {
         accessKeyId: configService.getOrThrow('s3.accessKeyId'),
-        secretAccessKey: configService.getOrThrow('s3.secretAccessKey'),
+        secretAccessKey: configService.getOrThrow('s3.secretAccessKey')
       },
       region: configService.getOrThrow('s3.region'),
       service: 's3',
@@ -27,7 +27,7 @@ export class SignService {
 
     return {
       signature: signedRequest.headers.authorization,
-      bodyHash: signedRequest.headers['x-amz-content-sha256'],
-    }
+      bodyHash: signedRequest.headers['x-amz-content-sha256']
+    };
   }
 }
