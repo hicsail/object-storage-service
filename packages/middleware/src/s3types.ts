@@ -5,4 +5,3 @@ import { MiddlewareType, MiddlewareStack } from '@aws-sdk/types';
 // middleware stack to the S3 client
 export declare type S3MiddlewareType = MiddlewareType<ServiceInputTypes, ServiceOutputTypes>;
 export declare type S3MiddlewareStack = MiddlewareStack<ServiceInputTypes, ServiceOutputTypes>;
-

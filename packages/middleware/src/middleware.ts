@@ -6,7 +6,7 @@ import fetch from 'cross-fetch';
 export interface CargoMiddlewareConfig {
   /** The Cargo Server to sign against */
   cargoEndpoint: string;
-};
+}
 
 /**
  * Make the middleware based on the provided configuration
@@ -21,7 +21,7 @@ const makeMiddleware: (config: CargoMiddlewareConfig) => S3MiddlewareType = (con
     const query = gql`
       query signRequest($request: ResourceRequest!) {
         signRequest(request: $request) {
-          signature,
+          signature
           bodyHash
         }
       }
@@ -36,7 +36,7 @@ const makeMiddleware: (config: CargoMiddlewareConfig) => S3MiddlewareType = (con
     // Do something with the args
     return next(args);
   };
-}
+};
 
 /**
  * Adds the Cargo Middleware to the given middleware stack after the
@@ -47,4 +47,4 @@ export const registerMiddleware = (config: CargoMiddlewareConfig, middlewareStac
     relation: 'after',
     toMiddleware: awsAuthMiddlewareOptions.name
   });
-}
+};
