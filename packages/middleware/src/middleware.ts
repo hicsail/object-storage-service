@@ -17,7 +17,6 @@ const makeMiddleware: (config: CargoMiddlewareConfig) => S3MiddlewareType = (con
     link: new HttpLink({ uri: config.cargoEndpoint, fetch })
   });
 
-  // TODO: Determing typing for next and args
   return (next: any) => async (args: any) => {
     const query = gql`
       query signRequest($request: ResourceRequest!) {
