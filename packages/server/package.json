@@ -22,6 +22,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@aws-crypto/sha256-js": "^4.0.0",
+    "@aws-sdk/protocol-http": "^3.282.0",
+    "@aws-sdk/signature-v4": "^3.282.0",
     "@nestjs/apollo": "^10.2.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
@@ -33,6 +36,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "apollo-server-express": "^3.12.0",
     "graphql": "^16.6.0",
+    "graphql-type-json": "^0.3.2",
     "mongoose": "^6.10.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",

@@ -7,13 +7,16 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver } from '@nestjs/apollo';
 import { ProjectModule } from './project/project.module';
+import { SignModule } from './sign/sign.module';
 
 @Module({
   imports: [
     PermsModule,
     ProjectModule,
+    SignModule,
     ConfigModule.forRoot({
-      load: [configuration]
+      load: [configuration],
+      isGlobal: true
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
