@@ -4,6 +4,8 @@ import { Model } from 'mongoose';
 import { Permissions, PermissionsDocument } from './perms.model';
 import { ProjectService } from '../project/project.service';
 import { PermissionChange } from './perms.dto';
+import { TokenPayload } from '../auth/user.dto';
+import { isServiceAccount } from '../auth/service-account.guard';
 
 @Injectable()
 export class PermService {
