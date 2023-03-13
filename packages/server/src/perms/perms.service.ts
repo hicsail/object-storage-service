@@ -4,6 +4,9 @@ import { Model } from 'mongoose';
 import { Permissions, PermissionsDocument } from './perms.model';
 import { ProjectService } from '../project/project.service';
 import { PermissionChange } from './perms.dto';
+import { ResourceRequest } from '../sign/request.dto';
+import { TokenPayload } from '../auth/user.dto';
+import { isServiceAccount } from '../auth/service-account.guard';
 
 @Injectable()
 export class PermService {
@@ -66,5 +69,28 @@ export class PermService {
 
   async changePermissions(user: string, bucket: string, perms: PermissionChange): Promise<Permissions | null> {
     return this.permsModel.findOneAndUpdate({ user: user, bucket: bucket }, perms, { new: true }).exec();
+  }
+
+  async hasAccess(user: TokenPayload, resource: ResourceRequest): Promise<boolean> {
+    const bucket = resource.path.split('/')[1];
+    const object = resource.path.split('/').slice(2).join('/');
+
+    // No bucket specified, handle account level access control
+    if (!bucket) {
+      return this.accountLevelAccess(user, resource);
+    }
+
+
+
+    return false;
+  }
+
+  private async accountLevelAccess(_user: TokenPayload, resource: ResourceRequest): Promise<boolean> {
+    // All users can list buckets
+    if (resource.method === 'GET') {
+      return true;
+    }
+
+    throw new BadRequestException(`Unsupported request operation ${resource.method} for ${resource.path}`);
   }
 }
