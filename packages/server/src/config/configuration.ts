@@ -8,6 +8,6 @@ export default () => ({
     region: process.env.S3_REGION
   },
   auth: {
-    publicKeyUri: process.env.AUTH_PUBLIC_KEY_URI,
+    publicKeyUri: process.env.AUTH_PUBLIC_KEY_URI
   }
 });

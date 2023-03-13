@@ -46,7 +46,14 @@ type SignedReqeuest {
 type Query {
   """Get all permissions for the user of the JWT for their project"""
   getPermissions: [Permissions!]!
+
+  """
+  Allows the currently authenticated user to get their own permisisons for a bucket
+  """
   getPermissionsForBucket(bucket: String!): Permissions!
+
+  """Means for the admin to get all permissions for a given bucket"""
+  getAllBucketPermissions(bucket: String!): [Permissions!]!
   getBucketsForProject(project: String!): [String!]!
   signRequest(request: ResourceRequest!): SignedReqeuest!
 }

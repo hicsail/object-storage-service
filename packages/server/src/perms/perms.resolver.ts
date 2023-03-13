@@ -22,13 +22,30 @@ export class PermsResolver {
     return this.permsService.getPermissions(user.id);
   }
 
-  @Query(() => Permissions)
-  async getPermissionsForBucket(@UserContext() user: TokenPayload, @Args('bucket') bucket: string): Promise<Permissions> {
+  @Query(() => Permissions, {
+    description: 'Allows the currently authenticated user to get their own permisisons for a bucket'
+  })
+  async getPermissionsForBucket(
+    @UserContext() user: TokenPayload,
+    @Args('bucket') bucket: string
+  ): Promise<Permissions> {
     const permissions = await this.permsService.getPermissionsForBucket(user.id, bucket);
     if (!permissions) {
       throw new BadRequestException(`User ${user} does not have permissions for bucket ${bucket}`);
     }
     return permissions;
+  }
+
+  @Query(() => [Permissions], { description: 'Means for the admin to get all permissions for a given bucket' })
+  async getAllBucketPermissions(
+    @Args('bucket') bucket: string,
+    @UserContext() user: TokenPayload
+  ): Promise<Permissions[]> {
+    const permissions = await this.permsService.getPermissionsForBucket(user.id, bucket);
+    if (!permissions || !permissions.admin) {
+      throw new UnauthorizedException(`User ${user.id} does not have permissions for bucket ${bucket}`);
+    }
+    return this.permsService.getAllBucketPermissions(bucket);
   }
 
   @Mutation(() => Permissions)
@@ -62,7 +79,11 @@ export class ServiceAccountPermsResolver {
   constructor(private readonly permsService: PermService, private readonly projectService: ProjectService) {}
 
   @Mutation(() => [Permissions])
-  serviceAddUser(@Args('user') user: string, @Args('project') project: string, @UserContext() serviceAccount: TokenPayload) {
+  serviceAddUser(
+    @Args('user') user: string,
+    @Args('project') project: string,
+    @UserContext() serviceAccount: TokenPayload
+  ) {
     // Make sure it is the correct service account
     if (serviceAccount.projectId !== project) {
       throw new UnauthorizedException('Service account must be in the same project as the user');
@@ -72,10 +93,12 @@ export class ServiceAccountPermsResolver {
   }
 
   @Mutation(() => Permissions)
-  async serviceChangePermissions(@Args('change') change: PermissionChange,
-                                 @Args('user') user: string,
-                                 @Args('bucket') bucket: string,
-                                 @UserContext() serviceAccount: TokenPayload): Promise<Permissions> {
+  async serviceChangePermissions(
+    @Args('change') change: PermissionChange,
+    @Args('user') user: string,
+    @Args('bucket') bucket: string,
+    @UserContext() serviceAccount: TokenPayload
+  ): Promise<Permissions> {
     // Check to see if permissions are currently stored for the user
     const currentPermissions = await this.permsService.getPermissionsForBucket(user, bucket);
     if (!currentPermissions) {

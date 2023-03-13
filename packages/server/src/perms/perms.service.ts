@@ -4,8 +4,6 @@ import { Model } from 'mongoose';
 import { Permissions, PermissionsDocument } from './perms.model';
 import { ProjectService } from '../project/project.service';
 import { PermissionChange } from './perms.dto';
-import { TokenPayload } from '../auth/user.dto';
-import { isServiceAccount } from '../auth/service-account.guard';
 
 @Injectable()
 export class PermService {
@@ -45,6 +43,10 @@ export class PermService {
 
   async getPermissionsForBucket(user: string, bucket: string): Promise<Permissions | null> {
     return this.permsModel.findOne({ user: user, bucket: bucket }).exec();
+  }
+
+  async getAllBucketPermissions(bucket: string): Promise<Permissions[]> {
+    return this.permsModel.find({ bucket: bucket }).exec();
   }
 
   /**

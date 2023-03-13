@@ -1,4 +1,4 @@
-import {HttpModule} from '@nestjs/axios';
+import { HttpModule } from '@nestjs/axios';
 import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -17,7 +17,7 @@ import { JwtStrategy } from './jwt.stretegy';
         return {
           publicKey: await authService.getPublicKey(),
           signOptions: {
-            algorithm: 'RS256',
+            algorithm: 'RS256'
           }
         };
       }

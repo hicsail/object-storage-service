@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import {TokenPayload} from './user.dto';
+import { TokenPayload } from './user.dto';
 
 export const isServiceAccount = (user: TokenPayload) => {
   return (user.role & 1) === 1;
