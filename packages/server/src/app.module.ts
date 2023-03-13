@@ -8,12 +8,14 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver } from '@nestjs/apollo';
 import { ProjectModule } from './project/project.module';
 import { SignModule } from './sign/sign.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     PermsModule,
     ProjectModule,
     SignModule,
+    AuthModule,
     ConfigModule.forRoot({
       load: [configuration],
       isGlobal: true

@@ -44,9 +44,16 @@ type SignedReqeuest {
 }
 
 type Query {
-  """Get all permissions for the user based on the user's project"""
-  getPermissions(user: String!): [Permissions!]!
-  getPermissionsForBucket(user: String!, bucket: String!): Permissions!
+  """Get all permissions for the user of the JWT for their project"""
+  getPermissions: [Permissions!]!
+
+  """
+  Allows the currently authenticated user to get their own permisisons for a bucket
+  """
+  getPermissionsForBucket(bucket: String!): Permissions!
+
+  """Means for the admin to get all permissions for a given bucket"""
+  getAllBucketPermissions(bucket: String!): [Permissions!]!
   getBucketsForProject(project: String!): [String!]!
   signRequest(request: ResourceRequest!): SignedReqeuest!
 }
@@ -69,8 +76,9 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON
 
 type Mutation {
-  addUser(user: String!, project: String!): [Permissions!]!
   changePermissions(change: PermissionChange!, user: String!, bucket: String!): Permissions!
+  serviceAddUser(user: String!, project: String!): [Permissions!]!
+  serviceChangePermissions(change: PermissionChange!, user: String!, bucket: String!): Permissions!
 
   """Add a bucket to a project, if the project is new it will be created"""
   addBucketToProject(project: String!, bucket: String!): Project!

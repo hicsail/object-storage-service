@@ -24,6 +24,11 @@ export class ProjectService {
     return existingProject.buckets;
   }
 
+  async getProjectForBucket(bucket: string): Promise<string | null> {
+    const result = await this.projectModel.findOne({ buckets: bucket });
+    return result ? result.project : null;
+  }
+
   /**
    * Add a bucket to a project, will throw an error if the project doesn't
    * exist or the bucket is already attached to the project
