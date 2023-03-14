@@ -1,7 +1,11 @@
+import { UseGuards } from '@nestjs/common';
 import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
+import { JwtAuthGuard } from '../auth/jwt.guard';
+import { ServiceAccountGuard } from '../auth/service-account.guard';
 import { Project } from './project.model';
 import { ProjectService } from './project.service';
 
+@UseGuards(JwtAuthGuard, ServiceAccountGuard)
 @Resolver(() => Project)
 export class ProjectResolver {
   constructor(private readonly projectService: ProjectService) {}

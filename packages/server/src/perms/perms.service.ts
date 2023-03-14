@@ -45,6 +45,10 @@ export class PermService {
     return this.permsModel.findOne({ user: user, bucket: bucket }).exec();
   }
 
+  async getAllBucketPermissions(bucket: string): Promise<Permissions[]> {
+    return this.permsModel.find({ bucket: bucket }).exec();
+  }
+
   /**
    * Make permissions for the given user for the given bucket. Defaults to
    * no access

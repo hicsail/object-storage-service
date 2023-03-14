@@ -1,7 +1,6 @@
-import { HttpRequest } from '@aws-sdk/protocol-http';
 import { InputType, Field } from '@nestjs/graphql';
 import JSON from 'graphql-type-json';
-import { QueryParameterBag, HeaderBag } from '@aws-sdk/types';
+import { QueryParameterBag, HeaderBag, HttpRequest } from '@aws-sdk/types';
 
 @InputType({ description: 'Wrapper for AWS HttpRequest' })
 export class ResourceRequest implements HttpRequest {
