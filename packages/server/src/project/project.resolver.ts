@@ -12,11 +12,13 @@ export class ProjectResolver {
 
   @Mutation(() => Project, { description: 'Add a bucket to a project, if the project is new it will be created' })
   addBucketToProject(@Args('project') project: string, @Args('bucket') bucket: string) {
+    // TODO: Make sure it is the correct service account
     return this.projectService.addBucket(project, bucket);
   }
 
   @Query(() => [String])
   getBucketsForProject(@Args('project') project: string) {
+    // TODO: Make sure it is the correct service account
     return this.projectService.getBuckets(project);
   }
 }
