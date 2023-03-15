@@ -1,4 +1,4 @@
-import { ListBucketsCommand, S3Client } from '@aws-sdk/client-s3';
+import { ListBucketsCommand, ListObjectsCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { registerMiddleware } from '@hicsail/cargo-middleware';
 
 // NOTE: For this sample, the JWT is expected as an environment. Since JWTs
@@ -28,8 +28,25 @@ async function main() {
   });
   registerMiddleware({ cargoEndpoint: CARGO_ENDPOINT, jwtTokenProvider: getJWTToken }, client.middlewareStack);
 
-  const response = await client.send(new ListBucketsCommand({}));
-  console.log(response);
+  // Example of listing buckets
+  console.log('Requesting list of buckets');
+  const buckets = await client.send(new ListBucketsCommand({}));
+  console.log(buckets);
+
+  // Example of reading a bucket's contents, only possible if the user has
+  // read access on the bucket
+  console.log(`List objects in ${process.env.READ_ACCESS_BUCKET}`);
+  const objects = await client.send(new ListObjectsCommand({ Bucket: process.env.READ_ACCESS_BUCKET }));
+  console.log(objects);
+
+  // Example of writing a file to a bucket, only possible of the user has
+  // write access on the bucket
+  console.log(`Writing file to ${process.env.WRITE_ACCESS_BUCKET}`);
+  await client.send(new PutObjectCommand({
+    Bucket: process.env.WRITE_ACCESS_BUCKET,
+    Key: 'test.txt',
+    Body: 'Hello World!'
+  }));
 }
 
 main();
