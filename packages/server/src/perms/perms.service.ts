@@ -103,7 +103,11 @@ export class PermService {
     throw new BadRequestException(`Unsupported request operation ${resource.method} for ${resource.path}`);
   }
 
-  private async bucketLevelAccess(user: TokenPayload, resource: ResourceRequest, userPerms: Permissions): Promise<boolean> {
+  private async bucketLevelAccess(
+    user: TokenPayload,
+    resource: ResourceRequest,
+    userPerms: Permissions
+  ): Promise<boolean> {
     // User needs read access to list contents of the bucket
     if (resource.method === 'GET') {
       return userPerms.read;
@@ -127,7 +131,11 @@ export class PermService {
     throw new BadRequestException(`Unsupported request operations ${resource.method} for ${resource.path}`);
   }
 
-  private async objectLevelAccess(user: TokenPayload, resource: ResourceRequest, userPerms: Permissions): Promise<boolean> {
+  private async objectLevelAccess(
+    user: TokenPayload,
+    resource: ResourceRequest,
+    userPerms: Permissions
+  ): Promise<boolean> {
     // User needs read to get the file
     if (resource.method === 'GET') {
       return userPerms.read || isServiceAccount(user);

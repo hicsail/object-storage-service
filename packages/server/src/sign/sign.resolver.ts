@@ -2,7 +2,7 @@ import { Resolver, Query, Args } from '@nestjs/graphql';
 import { SignService } from './sign.service';
 import { SignedReqeuest } from './sign.model';
 import { ResourceRequest } from './request.dto';
-import { UseGuards} from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { UserContext } from '../auth/user.decorator';
 import { TokenPayload } from '../auth/user.dto';
