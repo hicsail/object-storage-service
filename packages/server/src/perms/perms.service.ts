@@ -75,15 +75,15 @@ export class PermService {
     const bucket = resource.path.split('/')[1];
     const object = resource.path.split('/').slice(2).join('/');
 
+    // No bucket specified, handle account level access control
+    if (!bucket) {
+      return this.accountLevelAccess(user, resource);
+    }
+
     // Get user permissions
     const userPerms = await this.permsModel.findOne({ user: user.id, bucket });
     if (!userPerms) {
       throw new UnauthorizedException('User not granted access');
-    }
-
-    // No bucket specified, handle account level access control
-    if (!bucket) {
-      return this.accountLevelAccess(user, resource, userPerms);
     }
 
     // Only bucket specified, handle bucket level access control
@@ -91,10 +91,10 @@ export class PermService {
       return this.bucketLevelAccess(user, resource, userPerms);
     }
 
-    return this.objectLevelAccess(user, resource, perms);
+    return this.objectLevelAccess(user, resource, userPerms);
   }
 
-  private async accountLevelAccess(_user: TokenPayload, resource: ResourceRequest, _userPerms: Permissions): Promise<boolean> {
+  private async accountLevelAccess(_user: TokenPayload, resource: ResourceRequest): Promise<boolean> {
     // All users can list buckets
     if (resource.method === 'GET') {
       return true;
