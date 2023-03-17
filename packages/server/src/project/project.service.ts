@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { PermService } from '../perms/perms.service';
 import { Project, ProjectDocument } from './project.model';
 
@@ -10,6 +10,10 @@ export class ProjectService {
     @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
     @Inject(forwardRef(() => PermService)) private permService: PermService
   ) {}
+
+  async find(id: mongoose.Types.ObjectId): Promise<Project | null> {
+    return this.projectModel.findById(id);
+  }
 
   async create(project: string): Promise<Project> {
     const createdProject = new this.projectModel({ project, buckets: [] });
