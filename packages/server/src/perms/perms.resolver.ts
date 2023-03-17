@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ResolveReference } from '@nestjs/graphql';
 import { Permissions } from './perms.model';
 import { PermService } from './perms.service';
 import { BadRequestException, UnauthorizedException, UseGuards } from '@nestjs/common';
@@ -8,6 +8,7 @@ import { UserContext } from '../auth/user.decorator';
 import { TokenPayload } from '../auth/user.dto';
 import { ServiceAccountGuard } from '../auth/service-account.guard';
 import { ProjectService } from '../project/project.service';
+import mongoose from 'mongoose';
 
 /**
  * Handles all requests made by non-service accounts.
@@ -67,6 +68,18 @@ export class PermsResolver {
       throw new BadRequestException(`User ${user} does not have permissions for bucket ${bucket}`);
     }
     return newPerms;
+  }
+
+  @ResolveReference()
+  async resolveReference(reference: { __typename: string; _id: string }): Promise<Permissions> {
+    try {
+      const result = await this.permsService.find(new mongoose.Types.ObjectId(reference._id));
+      if (result) {
+        return result;
+      }
+    } catch (e: any) {}
+
+    throw new BadRequestException(`Organization not found with id: ${reference._id}`);
   }
 }
 

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { Permissions, PermissionsDocument } from './perms.model';
 import { ProjectService } from '../project/project.service';
 import { PermissionChange } from './perms.dto';
@@ -14,6 +14,10 @@ export class PermService {
     @InjectModel(Permissions.name) private readonly permsModel: Model<PermissionsDocument>,
     private readonly projectService: ProjectService
   ) {}
+
+  async find(id: mongoose.Types.ObjectId): Promise<Permissions | null> {
+    return this.permsModel.findById(id);
+  }
 
   /**
    * Get the permissions currently stored for the given user based on the

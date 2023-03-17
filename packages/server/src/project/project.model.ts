@@ -1,9 +1,10 @@
 import { Schema, SchemaFactory, Prop } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field, ID, Directive } from '@nestjs/graphql';
 
 @Schema()
 @ObjectType({ description: 'Keeps track of the buckets that belong to a project' })
+@Directive('@key(fields: "_id")')
 export class Project {
   @Field(() => ID)
   _id: mongoose.Types.ObjectId;

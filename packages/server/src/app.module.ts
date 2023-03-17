@@ -5,7 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from './config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver } from '@nestjs/apollo';
+import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { ProjectModule } from './project/project.module';
 import { SignModule } from './sign/sign.module';
 import { AuthModule } from './auth/auth.module';
@@ -27,9 +27,12 @@ import { AuthModule } from './auth/auth.module';
         uri: configService.getOrThrow('mongo.uri')
       })
     }),
-    GraphQLModule.forRoot({
-      autoSchemaFile: 'schema.gql',
-      driver: ApolloDriver
+    GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+      autoSchemaFile: {
+        federation: 2,
+        path: 'schema.gql'
+      },
+      driver: ApolloFederationDriver
     })
   ],
   providers: [AppService]
