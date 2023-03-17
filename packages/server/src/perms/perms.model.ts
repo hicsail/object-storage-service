@@ -1,9 +1,10 @@
 import { Schema, SchemaFactory, Prop } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field, ID, Directive } from '@nestjs/graphql';
 
 @Schema()
 @ObjectType()
+@Directive('@key(fields: "_id")')
 export class Permissions {
   @Field(() => ID)
   _id: mongoose.Types.ObjectId;
