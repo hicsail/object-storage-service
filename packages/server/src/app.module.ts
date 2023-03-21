@@ -9,6 +9,7 @@ import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/ap
 import { ProjectModule } from './project/project.module';
 import { SignModule } from './sign/sign.module';
 import { AuthModule } from './auth/auth.module';
+import { CargoAccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AuthModule } from './auth/auth.module';
     ProjectModule,
     SignModule,
     AuthModule,
+    CargoAccountModule,
     ConfigModule.forRoot({
       load: [configuration],
       isGlobal: true
