@@ -2,17 +2,18 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Permissions, PermissionsDocument } from './perms.model';
-import { ProjectService } from '../project/project.service';
 import { PermissionChange } from './perms.dto';
 import { ResourceRequest } from '../sign/request.dto';
 import { TokenPayload } from '../auth/user.dto';
 import { isServiceAccount } from '../auth/service-account.guard';
+import { ListBucketsCommand, S3Client } from '@aws-sdk/client-s3';
+import { CargoAccountService } from 'src/account/account.service';
 
 @Injectable()
 export class PermService {
   constructor(
     @InjectModel(Permissions.name) private readonly permsModel: Model<PermissionsDocument>,
-    private readonly projectService: ProjectService
+    private readonly accountService: CargoAccountService
   ) {}
 
   async find(id: mongoose.Types.ObjectId): Promise<Permissions | null> {
@@ -36,16 +37,33 @@ export class PermService {
     return perms.map((perm) => perm.user);
   }
 
-  /** Add a user to the system, create permissions for all buckets related to the user's project */
-  async addUser(user: string, project: string) {
+  /**
+  * Add a user to the system, create permissions for all buckets related to the user's project
+  *
+  * NOTE: In the future, it will not be required to manually add users
+  */
+  async addUser(user: string, project: string): Promise<Permissions[]> {
     // Make sure the user doesn't already exist
     const existingUser = await this.permsModel.findOne({ user: user });
     if (existingUser) {
       throw new BadRequestException(`User ${user} already exists`);
     }
 
-    const buckets = await this.projectService.getBuckets(project);
-    return await Promise.all(buckets.map((bucket) => this.makePermissions(user, bucket)));
+    const account = await this.accountService.findByProject(project);
+    if (!account) {
+      throw new BadRequestException(`No account found for project ${project}`);
+    }
+    const s3Client = account.getS3Client();
+
+    // Get buckets from S3
+    const listBuckets = await s3Client.send(new ListBucketsCommand({}));
+    const buckets = listBuckets.Buckets;
+    if (!buckets) {
+      return [];
+    }
+
+    // For all buckets with names, make user permissions for that bucket
+    return Promise.all(buckets.filter((bucket) => bucket.Name !== undefined).map((bucket) => this.makePermissions(user, bucket.Name!)));
   }
 
   async getPermissionsForBucket(user: string, bucket: string): Promise<Permissions | null> {

@@ -7,8 +7,8 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 import { UserContext } from '../auth/user.decorator';
 import { TokenPayload } from '../auth/user.dto';
 import { ServiceAccountGuard } from '../auth/service-account.guard';
-import { ProjectService } from '../project/project.service';
 import mongoose from 'mongoose';
+import {CargoAccountService} from 'src/account/account.service';
 
 /**
  * Handles all requests made by non-service accounts.
@@ -89,7 +89,7 @@ export class PermsResolver {
  */
 @UseGuards(JwtAuthGuard, ServiceAccountGuard)
 export class ServiceAccountPermsResolver {
-  constructor(private readonly permsService: PermService, private readonly projectService: ProjectService) {}
+  constructor(private readonly permsService: PermService, private readonly accountService: CargoAccountService) {}
 
   @Mutation(() => [Permissions])
   serviceAddUser(
@@ -110,7 +110,6 @@ export class ServiceAccountPermsResolver {
     @Args('change') change: PermissionChange,
     @Args('user') user: string,
     @Args('bucket') bucket: string,
-    @UserContext() serviceAccount: TokenPayload
   ): Promise<Permissions> {
     // Check to see if permissions are currently stored for the user
     const currentPermissions = await this.permsService.getPermissionsForBucket(user, bucket);
@@ -118,16 +117,7 @@ export class ServiceAccountPermsResolver {
       throw new BadRequestException(`User ${user} does not have permissions for bucket ${bucket}`);
     }
 
-    // Determine which project the user is in
-    const project = await this.projectService.getProjectForBucket(bucket);
-    if (!project) {
-      throw new BadRequestException(`Bucket ${bucket} does not exist`);
-    }
-
-    // Make sure the service account is in the same project as the user
-    if (project != serviceAccount.projectId) {
-      throw new UnauthorizedException('Service account must be in the same project as the user');
-    }
+    // TODO: Make sure the bucket exists for the account
 
     // Change the permissions
     const newPerms = await this.permsService.changePermissions(user, bucket, change);
