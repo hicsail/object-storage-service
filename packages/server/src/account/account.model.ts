@@ -19,18 +19,20 @@ export class CargoAccount {
   @Prop()
   s3Region: string;
 
-  getS3Client(): S3Client {
-    return new S3Client({
-      region: this.s3Region,
-      forcePathStyle: true,
-      endpoint: this.s3Endpoint,
-      credentials: {
-        accessKeyId: this.accessKey,
-        secretAccessKey: this.accessSecret
-      }
-    });
-  }
+  getS3Client: () => S3Client;
 }
 
 export type CargoAccountDocument = CargoAccount & Document;
 export const CargoAccountSchema = SchemaFactory.createForClass(CargoAccount);
+
+CargoAccountSchema.methods.getS3Client = function (): S3Client {
+  return new S3Client({
+    region: this.s3Region,
+    forcePathStyle: true,
+    endpoint: this.s3Endpoint,
+    credentials: {
+      accessKeyId: this.accessKey,
+      secretAccessKey: this.accessSecret
+    }
+  });
+};
