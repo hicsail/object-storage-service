@@ -2,17 +2,18 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Permissions, PermissionsDocument } from './perms.model';
-import { ProjectService } from '../project/project.service';
 import { PermissionChange } from './perms.dto';
 import { ResourceRequest } from '../sign/request.dto';
 import { TokenPayload } from '../auth/user.dto';
 import { isServiceAccount } from '../auth/service-account.guard';
+import { ListBucketsCommand } from '@aws-sdk/client-s3';
+import { CargoAccountService } from 'src/account/account.service';
 
 @Injectable()
 export class PermService {
   constructor(
     @InjectModel(Permissions.name) private readonly permsModel: Model<PermissionsDocument>,
-    private readonly projectService: ProjectService
+    private readonly accountService: CargoAccountService
   ) {}
 
   async find(id: mongoose.Types.ObjectId): Promise<Permissions | null> {
@@ -23,9 +24,25 @@ export class PermService {
    * Get the permissions currently stored for the given user based on the
    * buckets stored for the given project the user is a part of.
    */
-  async getPermissions(user: string): Promise<Permissions[]> {
-    // Find current permissions
-    return this.permsModel.find({ user: user }).exec();
+  async getPermissions(user: TokenPayload): Promise<Permissions[]> {
+    const account = await this.accountService.findByProject(user.projectId);
+    if (!account) {
+      throw new BadRequestException(`No account associated with user ${user.id}`);
+    }
+
+    // Get the client
+    const client = account.getS3Client();
+    const listBuckets = await client.send(new ListBucketsCommand({}));
+    if (!listBuckets.Buckets) {
+      return [];
+    }
+
+    // Return all permissions
+    return Promise.all(
+      listBuckets.Buckets.filter((bucket) => bucket.Name !== undefined).map((bucket) =>
+        this.getOrCreateDefault(user, bucket.Name!)
+      )
+    );
   }
 
   /**
@@ -36,20 +53,39 @@ export class PermService {
     return perms.map((perm) => perm.user);
   }
 
-  /** Add a user to the system, create permissions for all buckets related to the user's project */
-  async addUser(user: string, project: string) {
+  /**
+   * Add a user to the system, create permissions for all buckets related to the user's project
+   *
+   * NOTE: In the future, it will not be required to manually add users
+   */
+  async addUser(user: string, project: string): Promise<Permissions[]> {
     // Make sure the user doesn't already exist
     const existingUser = await this.permsModel.findOne({ user: user });
     if (existingUser) {
       throw new BadRequestException(`User ${user} already exists`);
     }
 
-    const buckets = await this.projectService.getBuckets(project);
-    return await Promise.all(buckets.map((bucket) => this.makePermissions(user, bucket)));
+    const account = await this.accountService.findByProject(project);
+    if (!account) {
+      throw new BadRequestException(`No account found for project ${project}`);
+    }
+    const s3Client = account.getS3Client();
+
+    // Get buckets from S3
+    const listBuckets = await s3Client.send(new ListBucketsCommand({}));
+    const buckets = listBuckets.Buckets;
+    if (!buckets) {
+      return [];
+    }
+
+    // For all buckets with names, make user permissions for that bucket
+    return Promise.all(
+      buckets.filter((bucket) => bucket.Name !== undefined).map((bucket) => this.makePermissions(user, bucket.Name!))
+    );
   }
 
-  async getPermissionsForBucket(user: string, bucket: string): Promise<Permissions | null> {
-    return this.permsModel.findOne({ user: user, bucket: bucket }).exec();
+  async getPermissionsForBucket(user: TokenPayload, bucket: string): Promise<Permissions | null> {
+    return this.getOrCreateDefault(user, bucket);
   }
 
   async getAllBucketPermissions(bucket: string): Promise<Permissions[]> {
@@ -167,5 +203,26 @@ export class PermService {
     }
 
     throw new BadRequestException(`Unsupported request operations ${resource.method} for ${resource.path}`);
+  }
+
+  /**
+   * Get the user permissions on the given bucket. If no permissions exist for
+   * the user, then the default permissions are created for the user and
+   * returned.
+   */
+  private async getOrCreateDefault(user: TokenPayload, bucket: string): Promise<Permissions> {
+    const perms = await this.permsModel.findOne({ user: user.id, bucket: bucket });
+    if (perms) {
+      return perms;
+    }
+
+    return this.permsModel.create({
+      user: user.id,
+      bucket: bucket,
+      read: false,
+      write: false,
+      delete: false,
+      admin: false
+    });
   }
 }

@@ -1,15 +1,12 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { PermsResolver, ServiceAccountPermsResolver } from './perms.resolver';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Permissions, PermissionsSchema } from './perms.model';
-import { ProjectModule } from '../project/project.module';
 import { PermService } from './perms.service';
+import { CargoAccountModule } from '../account/account.module';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Permissions.name, schema: PermissionsSchema }]),
-    forwardRef(() => ProjectModule)
-  ],
+  imports: [MongooseModule.forFeature([{ name: Permissions.name, schema: PermissionsSchema }]), CargoAccountModule],
   providers: [PermsResolver, PermService, ServiceAccountPermsResolver],
   exports: [PermService]
 })

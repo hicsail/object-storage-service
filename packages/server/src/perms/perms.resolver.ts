@@ -7,7 +7,6 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 import { UserContext } from '../auth/user.decorator';
 import { TokenPayload } from '../auth/user.dto';
 import { ServiceAccountGuard } from '../auth/service-account.guard';
-import { ProjectService } from '../project/project.service';
 import mongoose from 'mongoose';
 
 /**
@@ -20,7 +19,7 @@ export class PermsResolver {
 
   @Query(() => [Permissions], { description: 'Get all permissions for the user of the JWT for their project' })
   getPermissions(@UserContext() user: TokenPayload): Promise<Permissions[]> {
-    return this.permsService.getPermissions(user.id);
+    return this.permsService.getPermissions(user);
   }
 
   @Query(() => Permissions, {
@@ -30,7 +29,7 @@ export class PermsResolver {
     @UserContext() user: TokenPayload,
     @Args('bucket') bucket: string
   ): Promise<Permissions> {
-    const permissions = await this.permsService.getPermissionsForBucket(user.id, bucket);
+    const permissions = await this.permsService.getPermissionsForBucket(user, bucket);
     if (!permissions) {
       throw new BadRequestException(`User ${user} does not have permissions for bucket ${bucket}`);
     }
@@ -42,7 +41,7 @@ export class PermsResolver {
     @Args('bucket') bucket: string,
     @UserContext() user: TokenPayload
   ): Promise<Permissions[]> {
-    const permissions = await this.permsService.getPermissionsForBucket(user.id, bucket);
+    const permissions = await this.permsService.getPermissionsForBucket(user, bucket);
     if (!permissions || !permissions.admin) {
       throw new UnauthorizedException(`User ${user.id} does not have permissions for bucket ${bucket}`);
     }
@@ -57,7 +56,7 @@ export class PermsResolver {
     @UserContext() requestingUser: TokenPayload
   ): Promise<Permissions> {
     // Determine if the user making the request can change permissions on this bucket
-    const requestersPermissions = await this.permsService.getPermissionsForBucket(requestingUser.id, bucket);
+    const requestersPermissions = await this.permsService.getPermissionsForBucket(requestingUser, bucket);
     if (!requestersPermissions || !requestersPermissions.admin) {
       throw new UnauthorizedException(`User ${requestingUser.id} does not have permissions for bucket ${bucket}`);
     }
@@ -89,7 +88,7 @@ export class PermsResolver {
  */
 @UseGuards(JwtAuthGuard, ServiceAccountGuard)
 export class ServiceAccountPermsResolver {
-  constructor(private readonly permsService: PermService, private readonly projectService: ProjectService) {}
+  constructor(private readonly permsService: PermService) {}
 
   @Mutation(() => [Permissions])
   serviceAddUser(
@@ -109,26 +108,8 @@ export class ServiceAccountPermsResolver {
   async serviceChangePermissions(
     @Args('change') change: PermissionChange,
     @Args('user') user: string,
-    @Args('bucket') bucket: string,
-    @UserContext() serviceAccount: TokenPayload
+    @Args('bucket') bucket: string
   ): Promise<Permissions> {
-    // Check to see if permissions are currently stored for the user
-    const currentPermissions = await this.permsService.getPermissionsForBucket(user, bucket);
-    if (!currentPermissions) {
-      throw new BadRequestException(`User ${user} does not have permissions for bucket ${bucket}`);
-    }
-
-    // Determine which project the user is in
-    const project = await this.projectService.getProjectForBucket(bucket);
-    if (!project) {
-      throw new BadRequestException(`Bucket ${bucket} does not exist`);
-    }
-
-    // Make sure the service account is in the same project as the user
-    if (project != serviceAccount.projectId) {
-      throw new UnauthorizedException('Service account must be in the same project as the user');
-    }
-
     // Change the permissions
     const newPerms = await this.permsService.changePermissions(user, bucket, change);
     if (!newPerms) {

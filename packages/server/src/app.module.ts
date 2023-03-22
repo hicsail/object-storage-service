@@ -6,16 +6,16 @@ import configuration from './config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
-import { ProjectModule } from './project/project.module';
 import { SignModule } from './sign/sign.module';
 import { AuthModule } from './auth/auth.module';
+import { CargoAccountModule } from './account/account.module';
 
 @Module({
   imports: [
     PermsModule,
-    ProjectModule,
     SignModule,
     AuthModule,
+    CargoAccountModule,
     ConfigModule.forRoot({
       load: [configuration],
       isGlobal: true

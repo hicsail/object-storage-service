@@ -24,17 +24,6 @@ type Permissions {
   admin: Boolean!
 }
 
-"""Keeps track of the buckets that belong to a project"""
-type Project {
-  _id: ID!
-
-  """Auth microservice project ID"""
-  project: ID!
-
-  """List of buckets that belong to the project"""
-  buckets: [String!]!
-}
-
 type SignedReqeuest {
   """AWS Signature based on the request"""
   signature: String!
@@ -54,7 +43,6 @@ type Query {
 
   """Means for the admin to get all permissions for a given bucket"""
   getAllBucketPermissions(bucket: String!): [Permissions!]!
-  getBucketsForProject(project: String!): [String!]!
   signRequest(request: ResourceRequest!): SignedReqeuest!
 }
 
@@ -79,9 +67,6 @@ type Mutation {
   changePermissions(change: PermissionChange!, user: String!, bucket: String!): Permissions!
   serviceAddUser(user: String!, project: String!): [Permissions!]!
   serviceChangePermissions(change: PermissionChange!, user: String!, bucket: String!): Permissions!
-
-  """Add a bucket to a project, if the project is new it will be created"""
-  addBucketToProject(project: String!, bucket: String!): Project!
 }
 
 input PermissionChange {
