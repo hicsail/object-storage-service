@@ -6,10 +6,7 @@ import { PermService } from './perms.service';
 import { CargoAccountModule } from '../account/account.module';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Permissions.name, schema: PermissionsSchema }]),
-    CargoAccountModule
-  ],
+  imports: [MongooseModule.forFeature([{ name: Permissions.name, schema: PermissionsSchema }]), CargoAccountModule],
   providers: [PermsResolver, PermService, ServiceAccountPermsResolver],
   exports: [PermService]
 })

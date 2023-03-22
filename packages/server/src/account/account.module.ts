@@ -4,7 +4,7 @@ import { CargoAccount, CargoAccountSchema } from './account.model';
 import { CargoAccountService } from './account.service';
 
 @Module({
-  imports: [ MongooseModule.forFeature([{ name: CargoAccount.name, schema: CargoAccountSchema }]) ],
+  imports: [MongooseModule.forFeature([{ name: CargoAccount.name, schema: CargoAccountSchema }])],
   providers: [CargoAccountService],
   exports: [CargoAccountService]
 })

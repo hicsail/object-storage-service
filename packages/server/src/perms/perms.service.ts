@@ -35,11 +35,15 @@ export class PermService {
     const client = account.getS3Client();
     const listBuckets = await client.send(new ListBucketsCommand({}));
     if (!listBuckets.Buckets) {
-      return []
+      return [];
     }
 
     // Return all permissions
-    return Promise.all(listBuckets.Buckets.filter(bucket => bucket.Name !== undefined).map(bucket => this.getOrCreateDefault(user, bucket.Name!)));
+    return Promise.all(
+      listBuckets.Buckets.filter((bucket) => bucket.Name !== undefined).map((bucket) =>
+        this.getOrCreateDefault(user, bucket.Name!)
+      )
+    );
   }
 
   /**
@@ -51,10 +55,10 @@ export class PermService {
   }
 
   /**
-  * Add a user to the system, create permissions for all buckets related to the user's project
-  *
-  * NOTE: In the future, it will not be required to manually add users
-  */
+   * Add a user to the system, create permissions for all buckets related to the user's project
+   *
+   * NOTE: In the future, it will not be required to manually add users
+   */
   async addUser(user: string, project: string): Promise<Permissions[]> {
     // Make sure the user doesn't already exist
     const existingUser = await this.permsModel.findOne({ user: user });
@@ -76,7 +80,9 @@ export class PermService {
     }
 
     // For all buckets with names, make user permissions for that bucket
-    return Promise.all(buckets.filter((bucket) => bucket.Name !== undefined).map((bucket) => this.makePermissions(user, bucket.Name!)));
+    return Promise.all(
+      buckets.filter((bucket) => bucket.Name !== undefined).map((bucket) => this.makePermissions(user, bucket.Name!))
+    );
   }
 
   async getPermissionsForBucket(user: TokenPayload, bucket: string): Promise<Permissions | null> {

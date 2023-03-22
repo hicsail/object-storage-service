@@ -108,7 +108,7 @@ export class ServiceAccountPermsResolver {
   async serviceChangePermissions(
     @Args('change') change: PermissionChange,
     @Args('user') user: string,
-    @Args('bucket') bucket: string,
+    @Args('bucket') bucket: string
   ): Promise<Permissions> {
     // Change the permissions
     const newPerms = await this.permsService.changePermissions(user, bucket, change);
