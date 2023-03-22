@@ -31,7 +31,6 @@ export class PermService {
     }
 
     // Get the client
-    console.log(account.getS3Client());
     const client = account.getS3Client();
     const listBuckets = await client.send(new ListBucketsCommand({}));
     if (!listBuckets.Buckets) {
