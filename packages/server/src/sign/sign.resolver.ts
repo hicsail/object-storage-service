@@ -13,7 +13,10 @@ export class SignResolver {
 
   @UseGuards(JwtAuthGuard)
   @Query(() => CargoSignedReqeuest)
-  cargoSignRequest(@UserContext() user: TokenPayload, @Args('request') request: CargoResourceRequest): Promise<CargoSignedReqeuest> {
+  cargoSignRequest(
+    @UserContext() user: TokenPayload,
+    @Args('request') request: CargoResourceRequest
+  ): Promise<CargoSignedReqeuest> {
     return this.signService.signRequest(user, request);
   }
 }

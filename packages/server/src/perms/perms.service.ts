@@ -107,7 +107,11 @@ export class PermService {
     });
   }
 
-  async changePermissions(user: string, bucket: string, perms: CargoPermissionChange): Promise<CargoPermissions | null> {
+  async changePermissions(
+    user: string,
+    bucket: string,
+    perms: CargoPermissionChange
+  ): Promise<CargoPermissions | null> {
     return this.permsModel.findOneAndUpdate({ user: user, bucket: bucket }, perms, { new: true }).exec();
   }
 
