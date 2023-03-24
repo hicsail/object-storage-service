@@ -1,9 +1,9 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import { Permissions, PermissionsDocument } from './perms.model';
-import { PermissionChange } from './perms.dto';
-import { ResourceRequest } from '../sign/request.dto';
+import { CargoPermissions, CargoPermissionsDocument } from './perms.model';
+import { CargoPermissionChange } from './perms.dto';
+import { CargoResourceRequest } from '../sign/request.dto';
 import { TokenPayload } from '../auth/user.dto';
 import { isServiceAccount } from '../auth/service-account.guard';
 import { ListBucketsCommand } from '@aws-sdk/client-s3';
@@ -12,11 +12,11 @@ import { CargoAccountService } from 'src/account/account.service';
 @Injectable()
 export class PermService {
   constructor(
-    @InjectModel(Permissions.name) private readonly permsModel: Model<PermissionsDocument>,
+    @InjectModel(CargoPermissions.name) private readonly permsModel: Model<CargoPermissionsDocument>,
     private readonly accountService: CargoAccountService
   ) {}
 
-  async find(id: mongoose.Types.ObjectId): Promise<Permissions | null> {
+  async find(id: mongoose.Types.ObjectId): Promise<CargoPermissions | null> {
     return this.permsModel.findById(id);
   }
 
@@ -24,7 +24,7 @@ export class PermService {
    * Get the permissions currently stored for the given user based on the
    * buckets stored for the given project the user is a part of.
    */
-  async getPermissions(user: TokenPayload): Promise<Permissions[]> {
+  async getPermissions(user: TokenPayload): Promise<CargoPermissions[]> {
     const account = await this.accountService.findByProject(user.projectId);
     if (!account) {
       throw new BadRequestException(`No account associated with user ${user.id}`);
@@ -58,7 +58,7 @@ export class PermService {
    *
    * NOTE: In the future, it will not be required to manually add users
    */
-  async addUser(user: string, project: string): Promise<Permissions[]> {
+  async addUser(user: string, project: string): Promise<CargoPermissions[]> {
     // Make sure the user doesn't already exist
     const existingUser = await this.permsModel.findOne({ user: user });
     if (existingUser) {
@@ -84,11 +84,11 @@ export class PermService {
     );
   }
 
-  async getPermissionsForBucket(user: TokenPayload, bucket: string): Promise<Permissions | null> {
+  async getPermissionsForBucket(user: TokenPayload, bucket: string): Promise<CargoPermissions | null> {
     return this.getOrCreateDefault(user, bucket);
   }
 
-  async getAllBucketPermissions(bucket: string): Promise<Permissions[]> {
+  async getAllBucketPermissions(bucket: string): Promise<CargoPermissions[]> {
     return this.permsModel.find({ bucket: bucket }).exec();
   }
 
@@ -96,7 +96,7 @@ export class PermService {
    * Make permissions for the given user for the given bucket. Defaults to
    * no access
    */
-  async makePermissions(user: string, bucket: string): Promise<Permissions> {
+  async makePermissions(user: string, bucket: string): Promise<CargoPermissions> {
     return this.permsModel.create({
       user: user,
       bucket: bucket,
@@ -107,11 +107,15 @@ export class PermService {
     });
   }
 
-  async changePermissions(user: string, bucket: string, perms: PermissionChange): Promise<Permissions | null> {
+  async changePermissions(
+    user: string,
+    bucket: string,
+    perms: CargoPermissionChange
+  ): Promise<CargoPermissions | null> {
     return this.permsModel.findOneAndUpdate({ user: user, bucket: bucket }, perms, { new: true }).exec();
   }
 
-  async hasAccess(user: TokenPayload, resource: ResourceRequest): Promise<boolean> {
+  async hasAccess(user: TokenPayload, resource: CargoResourceRequest): Promise<boolean> {
     const bucket = resource.path.split('/')[1];
     const object = resource.path.split('/').slice(2).join('/');
 
@@ -121,10 +125,7 @@ export class PermService {
     }
 
     // Get user permissions
-    const userPerms = await this.permsModel.findOne({ user: user.id, bucket });
-    if (!userPerms) {
-      throw new UnauthorizedException('User not granted access');
-    }
+    const userPerms = await this.getOrCreateDefault(user, bucket);
 
     // Only bucket specified, handle bucket level access control
     if (bucket && object.length == 0) {
@@ -134,7 +135,7 @@ export class PermService {
     return this.objectLevelAccess(user, resource, userPerms);
   }
 
-  private async accountLevelAccess(_user: TokenPayload, resource: ResourceRequest): Promise<boolean> {
+  private async accountLevelAccess(_user: TokenPayload, resource: CargoResourceRequest): Promise<boolean> {
     // All users can list buckets
     if (resource.method === 'GET') {
       return true;
@@ -145,8 +146,8 @@ export class PermService {
 
   private async bucketLevelAccess(
     user: TokenPayload,
-    resource: ResourceRequest,
-    userPerms: Permissions
+    resource: CargoResourceRequest,
+    userPerms: CargoPermissions
   ): Promise<boolean> {
     // User needs read access to list contents of the bucket
     if (resource.method === 'GET') {
@@ -173,8 +174,8 @@ export class PermService {
 
   private async objectLevelAccess(
     user: TokenPayload,
-    resource: ResourceRequest,
-    userPerms: Permissions
+    resource: CargoResourceRequest,
+    userPerms: CargoPermissions
   ): Promise<boolean> {
     // User needs read to get the file
     if (resource.method === 'GET') {
@@ -210,7 +211,7 @@ export class PermService {
    * the user, then the default permissions are created for the user and
    * returned.
    */
-  private async getOrCreateDefault(user: TokenPayload, bucket: string): Promise<Permissions> {
+  private async getOrCreateDefault(user: TokenPayload, bucket: string): Promise<CargoPermissions> {
     const perms = await this.permsModel.findOne({ user: user.id, bucket: bucket });
     if (perms) {
       return perms;

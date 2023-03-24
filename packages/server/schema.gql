@@ -2,7 +2,7 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Permissions {
+type CargoPermissions {
   _id: ID!
 
   """ID of the user from the Auth microservice"""
@@ -24,7 +24,7 @@ type Permissions {
   admin: Boolean!
 }
 
-type SignedReqeuest {
+type CargoSignedReqeuest {
   """AWS Signature based on the request"""
   signature: String!
 
@@ -34,20 +34,20 @@ type SignedReqeuest {
 
 type Query {
   """Get all permissions for the user of the JWT for their project"""
-  getPermissions: [Permissions!]!
+  cargoGetPermissions: [CargoPermissions!]!
 
   """
   Allows the currently authenticated user to get their own permisisons for a bucket
   """
-  getPermissionsForBucket(bucket: String!): Permissions!
+  cargoGetPermissionsForBucket(bucket: String!): CargoPermissions!
 
   """Means for the admin to get all permissions for a given bucket"""
-  getAllBucketPermissions(bucket: String!): [Permissions!]!
-  signRequest(request: ResourceRequest!): SignedReqeuest!
+  cargoGetAllBucketPermissions(bucket: String!): [CargoPermissions!]!
+  cargoSignRequest(request: CargoResourceRequest!): CargoSignedReqeuest!
 }
 
 """Wrapper for AWS HttpRequest"""
-input ResourceRequest {
+input CargoResourceRequest {
   method: String!
   protocol: String!
   hostname: String!
@@ -64,12 +64,12 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON
 
 type Mutation {
-  changePermissions(change: PermissionChange!, user: String!, bucket: String!): Permissions!
-  serviceAddUser(user: String!, project: String!): [Permissions!]!
-  serviceChangePermissions(change: PermissionChange!, user: String!, bucket: String!): Permissions!
+  cargoChangePermissions(change: CargoPermissionChange!, user: String!, bucket: String!): CargoPermissions!
+  cargoServiceAddUser(user: String!, project: String!): [CargoPermissions!]!
+  cargoServiceChangePermissions(change: CargoPermissionChange!, user: String!, bucket: String!): CargoPermissions!
 }
 
-input PermissionChange {
+input CargoPermissionChange {
   read: Boolean!
   write: Boolean!
   delete: Boolean!

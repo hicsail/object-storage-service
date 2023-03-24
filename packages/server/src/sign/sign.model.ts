@@ -1,7 +1,7 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
-export class SignedReqeuest {
+export class CargoSignedReqeuest {
   @Field(() => String, { description: 'AWS Signature based on the request' })
   signature: string;
 
