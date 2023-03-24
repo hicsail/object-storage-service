@@ -1,7 +1,7 @@
 import { InputType, Field } from '@nestjs/graphql';
 
 @InputType()
-export class PermissionChange {
+export class CargoPermissionChange {
   @Field()
   read: boolean;
 

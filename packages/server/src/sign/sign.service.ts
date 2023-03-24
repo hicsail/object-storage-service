@@ -2,8 +2,8 @@ import { SignatureV4 } from '@aws-sdk/signature-v4';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Sha256 } from '@aws-crypto/sha256-js';
-import { SignedReqeuest } from './sign.model';
-import { ResourceRequest } from './request.dto';
+import { CargoSignedReqeuest } from './sign.model';
+import { CargoResourceRequest } from './request.dto';
 import { PermService } from '../perms/perms.service';
 import { TokenPayload } from '../auth/user.dto';
 
@@ -23,7 +23,7 @@ export class SignService {
     });
   }
 
-  async signRequest(user: TokenPayload, request: ResourceRequest): Promise<SignedReqeuest> {
+  async signRequest(user: TokenPayload, request: CargoResourceRequest): Promise<CargoSignedReqeuest> {
     // Check if the user has access to the requested resource
     const isAllowed = await this.permSerivce.hasAccess(user, request);
     if (!isAllowed) {

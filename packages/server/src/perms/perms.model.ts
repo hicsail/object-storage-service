@@ -5,7 +5,7 @@ import { ObjectType, Field, ID, Directive } from '@nestjs/graphql';
 @Schema()
 @ObjectType()
 @Directive('@key(fields: "_id")')
-export class Permissions {
+export class CargoPermissions {
   @Field(() => ID)
   _id: mongoose.Types.ObjectId;
 
@@ -34,5 +34,5 @@ export class Permissions {
   admin: boolean;
 }
 
-export type PermissionsDocument = Permissions & Document;
-export const PermissionsSchema = SchemaFactory.createForClass(Permissions);
+export type CargoPermissionsDocument = CargoPermissions & Document;
+export const CargoPermissionsSchema = SchemaFactory.createForClass(CargoPermissions);

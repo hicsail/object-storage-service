@@ -1,8 +1,8 @@
 import { Resolver, Query, Mutation, Args, ResolveReference } from '@nestjs/graphql';
-import { Permissions } from './perms.model';
+import { CargoPermissions } from './perms.model';
 import { PermService } from './perms.service';
 import { BadRequestException, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { PermissionChange } from './perms.dto';
+import { CargoPermissionChange } from './perms.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { UserContext } from '../auth/user.decorator';
 import { TokenPayload } from '../auth/user.dto';
@@ -13,22 +13,22 @@ import mongoose from 'mongoose';
  * Handles all requests made by non-service accounts.
  */
 @UseGuards(JwtAuthGuard)
-@Resolver(() => Permissions)
+@Resolver(() => CargoPermissions)
 export class PermsResolver {
   constructor(private readonly permsService: PermService) {}
 
-  @Query(() => [Permissions], { description: 'Get all permissions for the user of the JWT for their project' })
-  getPermissions(@UserContext() user: TokenPayload): Promise<Permissions[]> {
+  @Query(() => [CargoPermissions], { description: 'Get all permissions for the user of the JWT for their project' })
+  cargoGetCargoPermissions(@UserContext() user: TokenPayload): Promise<CargoPermissions[]> {
     return this.permsService.getPermissions(user);
   }
 
-  @Query(() => Permissions, {
+  @Query(() => CargoPermissions, {
     description: 'Allows the currently authenticated user to get their own permisisons for a bucket'
   })
-  async getPermissionsForBucket(
+  async cargoGetCargoPermissionsForBucket(
     @UserContext() user: TokenPayload,
     @Args('bucket') bucket: string
-  ): Promise<Permissions> {
+  ): Promise<CargoPermissions> {
     const permissions = await this.permsService.getPermissionsForBucket(user, bucket);
     if (!permissions) {
       throw new BadRequestException(`User ${user} does not have permissions for bucket ${bucket}`);
@@ -36,11 +36,11 @@ export class PermsResolver {
     return permissions;
   }
 
-  @Query(() => [Permissions], { description: 'Means for the admin to get all permissions for a given bucket' })
-  async getAllBucketPermissions(
+  @Query(() => [CargoPermissions], { description: 'Means for the admin to get all permissions for a given bucket' })
+  async cargoGetAllBucketCargoPermissions(
     @Args('bucket') bucket: string,
     @UserContext() user: TokenPayload
-  ): Promise<Permissions[]> {
+  ): Promise<CargoPermissions[]> {
     const permissions = await this.permsService.getPermissionsForBucket(user, bucket);
     if (!permissions || !permissions.admin) {
       throw new UnauthorizedException(`User ${user.id} does not have permissions for bucket ${bucket}`);
@@ -48,16 +48,16 @@ export class PermsResolver {
     return this.permsService.getAllBucketPermissions(bucket);
   }
 
-  @Mutation(() => Permissions)
-  async changePermissions(
-    @Args('change') change: PermissionChange,
+  @Mutation(() => CargoPermissions)
+  async cargoChangeCargoPermissions(
+    @Args('change') change: CargoPermissionChange,
     @Args('user') user: string,
     @Args('bucket') bucket: string,
     @UserContext() requestingUser: TokenPayload
-  ): Promise<Permissions> {
+  ): Promise<CargoPermissions> {
     // Determine if the user making the request can change permissions on this bucket
-    const requestersPermissions = await this.permsService.getPermissionsForBucket(requestingUser, bucket);
-    if (!requestersPermissions || !requestersPermissions.admin) {
+    const requestersCargoPermissions = await this.permsService.getPermissionsForBucket(requestingUser, bucket);
+    if (!requestersCargoPermissions || !requestersCargoPermissions.admin) {
       throw new UnauthorizedException(`User ${requestingUser.id} does not have permissions for bucket ${bucket}`);
     }
 
@@ -70,7 +70,7 @@ export class PermsResolver {
   }
 
   @ResolveReference()
-  async resolveReference(reference: { __typename: string; _id: string }): Promise<Permissions> {
+  async resolveReference(reference: { __typename: string; _id: string }): Promise<CargoPermissions> {
     try {
       const result = await this.permsService.find(new mongoose.Types.ObjectId(reference._id));
       if (result) {
@@ -90,8 +90,8 @@ export class PermsResolver {
 export class ServiceAccountPermsResolver {
   constructor(private readonly permsService: PermService) {}
 
-  @Mutation(() => [Permissions])
-  serviceAddUser(
+  @Mutation(() => [CargoPermissions])
+  cargoServiceAddUser(
     @Args('user') user: string,
     @Args('project') project: string,
     @UserContext() serviceAccount: TokenPayload
@@ -104,12 +104,12 @@ export class ServiceAccountPermsResolver {
     return this.permsService.addUser(user, project);
   }
 
-  @Mutation(() => Permissions)
-  async serviceChangePermissions(
-    @Args('change') change: PermissionChange,
+  @Mutation(() => CargoPermissions)
+  async cargoServiceChangeCargoPermissions(
+    @Args('change') change: CargoPermissionChange,
     @Args('user') user: string,
     @Args('bucket') bucket: string
-  ): Promise<Permissions> {
+  ): Promise<CargoPermissions> {
     // Change the permissions
     const newPerms = await this.permsService.changePermissions(user, bucket, change);
     if (!newPerms) {
