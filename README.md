@@ -12,9 +12,9 @@ Cargo is a microservice in SAIL which provides the ability to give users permiss
 
 Cargo is made up of three distinct components.
 
-Cargo Server: Deployment which handles user permission storage and verifies a user's ability to interact with a specific resource based on the stored user permissions.
+Cargo Server: Deployment which handles user permission storage and verifies a user's ability to interact with a specific resource based on the stored user permissions. For specific usage information, please refer to the [GraphQL endpoint](https://cargo-staging.sail.codes/graphql).
 
-Cargo Client: Typescript library which allows for querying and manipulating permissions. Communicates with the Cargo Server. Intended to be used on an application backend. Applications are authenticated via API key.
+Cargo Client: Typescript library which allows for querying and manipulating permissions. Communicates with the Cargo Server. Intended to be used on an application backend. Applications are authenticated via API key. (**Currently Not Implemented**)
 
 Cargo Middleware: Typescript library which provides an S3 compliant middleware. The middleware communicates with the Cargo Server to generate the correct [AWS signature](https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html) if the user has the correct permissions. The user is identified via [JWT](https://jwt.io/).
 
@@ -26,16 +26,11 @@ Below is a sample workflow involving an application client and server. In this c
 
 ```mermaid
 sequenceDiagram
-App Client ->> App Server: Get Permissions(JWT, Bucket)
-App Server ->> Cargo Client: Get Permissions(JWT, Bucket, Project ID)
-Cargo Client ->> Cargo Server: Get Permissions(JWT, Bucket, Project ID)
-Cargo Server -->> Cargo Client: Permissions
-Cargo Client -->> App Server: Permissions
-App Server -->> App Client: Permissions
-
+App Client ->> Cargo Server: Get Permissions(JWT, Bucket)
+Cargo Server -->> App Client: Permissions
 ```
 
-The back and forth between between the application and Cargo allows for custom logic in terms of how to map different entities to buckets. For example, the application client may work in terms of "datasets" and the application server translates the "datasets" into different buckets.
+The application client is able to directly communicate with the Cargo Server to get permissions via the GraphQL interface. The project the user is associated with is taken from the JWT which informs the Cargo Server which S3 compatible account to use.
 
 #### Writing a File
 
@@ -44,14 +39,16 @@ Below is a sample where the user is uploading a file to the object storage.
 ```mermaid
 sequenceDiagram
 App Client ->> S3 SDK: Upload File(File, Account, Bucket)
-S3 SDK ->> Cargo Middleware: Check Authorization(JWT, Project ID, Bucket)
-Cargo Middleware ->> Cargo Server: Check Authorization(JWT, Project ID, Bucket)
+S3 SDK ->> Cargo Middleware: Check Authorization(JWT, Bucket)
+Cargo Middleware ->> Cargo Server: Check Authorization(JWT, Bucket)
 Cargo Server -->> Cargo Middleware: (On Success) AWS Signature, Hash
 Cargo Middleware -->> S3 SDK: AWS Signature, Hash
 S3 SDK ->> S3: Upload File(AWS Signature, Hash)
 ```
 
 The Cargo Middleware, which is added to the S3 middleware stack, checks for authorization against the Cargo Server. The Cargo server in turn provides the correct AWS Signature and Hash if the user has the ability to write to the bucket. The S3 SDK itself is not configured with the credentials needed to access the S3 compatible endpoint, and relies on the Cargo Middleware and Cargo Server to produce the required signature and hash of the body.
+
+The Cargo Server supports multiple S3 accounts and uses the project ID found in the JWT to determine which account to use for the AWS signature.
 
 #### Root Level Actions
 
@@ -60,17 +57,17 @@ Functionality such as creating and deleting buckets is expected to be handled on
 ```mermaid
 sequenceDiagram
 App Client ->> App Server: New Bucket(JWT)
-App Server ->> App Server: Verify Root(JWT)
-App Server ->> S3 SDK: New Bucket(Project ID, Bucket Name)
-S3 SDK ->> Cargo Root Middleware: Check Authorization(Project ID, API Key)
-Cargo Root Middleware ->> Cargo Server: Check Authorization(Project ID, API Key)
+App Server ->> App Server: Verify Access(JWT)
+App Server ->> S3 SDK: New Bucket(Bucket Name)
+S3 SDK ->> Cargo Root Middleware: Check Authorization(Service Account JWT)
+Cargo Root Middleware ->> Cargo Server: Check Authorization(Service Account JWT)
 Cargo Server -->> Cargo Root Middleware: (On Success) AWS Signature, Hash
 Cargo Root Middleware -->> S3 SDK: AWS Signature, Hash
-S3 SDK ->> S3: Create Bucket(Project ID, Bucket Name)
+S3 SDK ->> S3: Create Bucket(Bucket Name)
 
 ```
 
-
+Verification of what actions a user can take for Cargo Root Level Actions is dependent on application specific logic.
 
 ## Authentication and Authorization
 
@@ -95,11 +92,10 @@ Note, for certain use cases various combinations may not make sense. For example
 
 The root user is represented by the App Server itself and is accessed via the API key granted to the App Server. For functionality such as adding or removing buckets, the App Server accomplishes this through root access middleware which uses the API key to get the AWS signature and hash.
 
+The root user should represent the App Server itself and is identified as the service account by the SAIL Auth Microservice. The App Server will use the exact same middleware and will provide the root user JWT instead.
+
 ### AWS Signature and Hash
 
 The technology which allows for these interacts to take place is the AWS Signature V4. The signing method involves a hash using the HTTP request for the operation and the secret key. Additionally a SHA256 hash of the request body needs to be provided. For more information on how these are generated, refer to the [AWS official documentation](https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html).
 
 SAIL Cargo works by accepting the HTTP request as a parameter and using the AWS Signature V4 library to manually produce the signature and hash. In this way, the secret key for the S3 interface is contained to the Cargo Server and the appearance of having many different tokens with different access levels is possible.
-
-
-
