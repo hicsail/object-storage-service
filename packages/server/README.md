@@ -19,20 +19,16 @@ The Cargo server supported interactions via GraphQL. Below are example workflows
 
 ### Adding a Bucket to the Server
 
-The server maintains a list of supported projects and the buckets contained in that project. See `src/project/project.model.ts` for more information on what is stored. When a request is made to add a bucket to a project not yet stored in the system, an entry for that project will be added.
+Buckets do not have to be manually added to the Cargo Server. Instead when permissions are retrieved, the Cargo server will first check for what buckets exist then populate permissions for those buckets.
 
 ```mermaid
 sequenceDiagram
-Client ->> Cargo Server: addBucket(projectId, bucketName)
-Cargo Server ->> Cargo Server: getProjectOrCreate(projectId)
-Cargo Server ->> Cargo Server: addBucketToProject(projectId, bucketName)
-Cargo Server ->> Cargo Server: addUserPermissionsForBucket(usersInProject, bucket)
-Cargo Server -->> Client: project
+Client ->> Cargo Server: getBucketPermissions(JWT, bucketName)
+Cargo Server ->> Cargo Server: getOrCreateDefault(JWT, bucketName)
+Cargo Server -->> Client: permissions
 ```
 
-Something to note, the Cargo Server itself is not creating a new bucket. The Cargo Server merely maintains user permissions for a bucket and nothing more. The bucket itself can be created in the S3 instance either before or after updating the Cargo Server. Ideally the Cargo Server would be updated after to ensure the bucket is created successfully.
-
-Additionally, when a new bucket is added, users in Cargo Server who are associated with the given project will automatically have User Permissions generated for them (with no actual access granted) so that you can immediately query user permissions for that new bucket.
+:warning: In the future this process will be optimized to automatically populate permissions based on changes made against the S3 backend instance.
 
 ### Adding a User to the Server
 
@@ -41,11 +37,15 @@ Adding a user will automatically populate user permissions for all buckets in th
 ```mermaid
 sequenceDiagram
 Client ->> Cargo Server: addUser(userId, projectId)
-Cargo Server ->> Cargo Server: addUserPermissionsForProject(userId, projectId)
+Cargo Server ->> S3: Get Buckets
+S3 -->> Cargo Server: Buckets
+Cargo Server ->> Cargo Server: getOrMakeDefault(userID, Buckets)
 Cargo Server -->> Client: permissions[]
 ```
 
 The client will get back the list of permissions that were generated for the user.
+
+:warning: Once better integration is made with the Auth microservice, this should update more automatically and not require a manual call
 
 ### Getting Permissions
 
@@ -53,7 +53,10 @@ The client can request permissions in a couple of different contexts. The client
 
 ```mermaid
 sequenceDiagram
-Client ->> Cargo Server: getPermissions(userId)
+Client ->> Cargo Server: getPermissions(JWT)
+Cargo Server ->> S3: Get Buckets
+S3 -->> Cargo Server: Buckets
+Cargo Server ->> Cargo Server: getOrMakeDefault(JWT, Buckets)
 Cargo Server -->> Client: permisisons[]
 Client ->> Cargo Server: getPermissionsForBucket(userId, bucketName)
 Cargo Server -->> Client: permissions
