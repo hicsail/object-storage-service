@@ -1,6 +1,6 @@
 {
-  "name": "@hicsail/cargo",
-  "version": "0.0.1",
+  "name": "@bu-sail/cargo",
+  "version": "0.1.0",
   "description": "Microservice which provides a user permission system ontop of an S3 compatible storage bucket",
   "scripts": {
     "build": "npm run build --workspaces --if-present",

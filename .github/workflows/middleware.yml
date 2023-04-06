@@ -6,6 +6,8 @@ on:
       - 'packages/middleware/**'
     branches:
       - main
+    tags:
+      - "v*.*.*"
   pull_request:
     paths:
       - 'packages/middleware/**'
@@ -59,3 +61,37 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  publish:
+    needs: [lint, build]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    name: NPM Publish
+    defaults:
+      run:
+        working-directory: packages/middleware
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: NPM Install
+        run: npm install
+        shell: bash
+
+      - name: Build
+        run: npm run build
+
+      - name: Setup NPM CI
+        run: npm ci
+
+      - name: Publish Package
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+

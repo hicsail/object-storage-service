@@ -1,6 +1,6 @@
 {
-  "name": "@hicsail/cargo-client",
-  "version": "1.0.0",
+  "name": "@bu-sail/cargo-client",
+  "version": "0.1.0",
   "description": "",
   "main": "dist",
   "types": "dist",
