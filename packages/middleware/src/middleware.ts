@@ -44,8 +44,8 @@ const makeMiddleware: (config: CargoMiddlewareConfig) => S3MiddlewareType = (con
 
   return (next: any) => async (args: any) => {
     const query = gql`
-      query signRequest($request: ResourceRequest!) {
-        signRequest(request: $request) {
+      query cargoSignRequest($request: CargoResourceRequest!) {
+        cargoSignRequest(request: $request) {
           signature
           bodyHash
         }
@@ -53,8 +53,7 @@ const makeMiddleware: (config: CargoMiddlewareConfig) => S3MiddlewareType = (con
     `;
 
     const response = await apolloClient.query({ query, variables: { request: args.request } });
-    const { signature, bodyHash } = response.data.signRequest;
-
+    const { signature, bodyHash } = response.data.cargoSignRequest;
     args.request['headers']['authorization'] = signature;
     args.request['headers']['x-amz-content-sha256'] = bodyHash;
 
