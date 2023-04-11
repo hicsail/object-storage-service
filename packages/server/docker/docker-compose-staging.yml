@@ -6,14 +6,26 @@ services:
     restart: "always"
     volumes:
       - cargo-staging:/data/db
-  signlab:
+  cargo:
     image: hicsail/cargo:main
     restart: always
     depends_on:
       - mongo
+      - minio
     ports: ["3006:3000"]
     env_file:
       - ../../../stack.env
+  minio:
+    image: minio/minio:RELEASE.2023-04-07T05-28-58Z.fips
+    restart: "always"
+    ports: ["9002:9000", "9003:9001"]
+    volumes:
+      - minio-staging:/data
+    command: server /data --console-address ":9001"
+    env_file:
+    - ../../../stack.env
 volumes:
   cargo-staging:
+    external: true
+  minio-staging:
     external: true
