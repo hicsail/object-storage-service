@@ -1,12 +1,14 @@
 version: '2'
 services:
   mongo:
+    container_name: mongo-cargo-staging
     image: mongo
     ports: ["27024:27017"]
     restart: "always"
     volumes:
       - cargo-staging:/data/db
   cargo:
+    container_name: cargo-server-staging
     image: hicsail/cargo:main
     restart: always
     depends_on:
@@ -16,6 +18,7 @@ services:
     env_file:
       - ../../../stack.env
   minio:
+    container_name: minio-cargo-staging
     image: minio/minio:RELEASE.2023-04-07T05-28-58Z.fips
     restart: "always"
     ports: ["9002:9000", "9003:9001"]
