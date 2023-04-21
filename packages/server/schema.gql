@@ -2,11 +2,13 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type UserModel {
+  id: ID!
+}
+
 type CargoPermissions {
   _id: ID!
-
-  """ID of the user from the Auth microservice"""
-  user: ID!
+  user: UserModel!
 
   """The bucket that the user permission is on"""
   bucket: String!
