@@ -1,5 +1,5 @@
 import { Resolver, Query, Mutation, Args, ResolveReference, ResolveField, Parent } from '@nestjs/graphql';
-import { CargoPermissions, User } from './perms.model';
+import { CargoPermissions, UserModel } from './perms.model';
 import { PermService } from './perms.service';
 import { BadRequestException, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { CargoPermissionChange } from './perms.dto';
@@ -81,9 +81,9 @@ export class PermsResolver {
     throw new BadRequestException(`Organization not found with id: ${reference._id}`);
   }
 
-  @ResolveField(() => User)
+  @ResolveField('user', () => UserModel)
   resolveUser(@Parent() perms: CargoPermissions): any {
-    return { __typename: 'User', id: perms.user };
+    return { __typename: 'UserModel', id: perms.user };
   }
 }
 

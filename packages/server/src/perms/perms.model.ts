@@ -6,7 +6,8 @@ import { ObjectType, Field, ID, Directive } from '@nestjs/graphql';
 /** Definition for external user */
 @ObjectType()
 @Directive('@key(fields: "id")')
-export class User {
+@Directive('@extends')
+export class UserModel {
   @Field(() => ID)
   @Directive('@external')
   id: string;
@@ -20,7 +21,7 @@ export class CargoPermissions {
   _id: mongoose.Types.ObjectId;
 
   @Prop()
-  @Field(() => User, { description: 'ID of the user from the Auth microservice' })
+  @Field(() => UserModel, { description: 'ID of the user from the Auth microservice' })
   user: string;
 
   @Prop()

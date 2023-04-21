@@ -2,15 +2,13 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type User {
+type UserModel {
   id: ID!
 }
 
 type CargoPermissions {
   _id: ID!
-
-  """ID of the user from the Auth microservice"""
-  user: User!
+  user: UserModel!
 
   """The bucket that the user permission is on"""
   bucket: String!
@@ -26,7 +24,6 @@ type CargoPermissions {
 
   """If the user can modify permissions on the bucket"""
   admin: Boolean!
-  resolveUser: User!
 }
 
 type CargoSignedReqeuest {
