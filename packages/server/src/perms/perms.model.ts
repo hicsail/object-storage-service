@@ -2,7 +2,6 @@ import { Schema, SchemaFactory, Prop } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { ObjectType, Field, ID, Directive } from '@nestjs/graphql';
 
-
 /** Definition for external user */
 @ObjectType()
 @Directive('@key(fields: "id")')
