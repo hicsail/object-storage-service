@@ -18,6 +18,8 @@ async function main() {
   const client = new S3Client({
     forcePathStyle: true,
 
+    endpoint: 'https://minio.sail.codes',
+
     // The following need to exist for the S3 Client to work, but the values
     // themselves do not matter
     region: 'us-east-1',
