@@ -2,6 +2,16 @@ import { Schema, SchemaFactory, Prop } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { ObjectType, Field, ID, Directive } from '@nestjs/graphql';
 
+
+/** Definition for external user */
+@ObjectType()
+@Directive('@key(fields: "id")')
+export class User {
+  @Field(() => ID)
+  @Directive('@external')
+  id: string;
+}
+
 @Schema()
 @ObjectType()
 @Directive('@key(fields: "_id")')
@@ -10,7 +20,7 @@ export class CargoPermissions {
   _id: mongoose.Types.ObjectId;
 
   @Prop()
-  @Field(() => ID, { description: 'ID of the user from the Auth microservice' })
+  @Field(() => User, { description: 'ID of the user from the Auth microservice' })
   user: string;
 
   @Prop()

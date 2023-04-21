@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import { CargoPermissions, CargoPermissionsDocument } from './perms.model';
+import { CargoPermissions, CargoPermissionsDocument, User } from './perms.model';
 import { CargoPermissionChange } from './perms.dto';
 import { CargoResourceRequest } from '../sign/request.dto';
 import { TokenPayload } from '../auth/user.dto';
