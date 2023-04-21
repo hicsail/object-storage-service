@@ -5,11 +5,10 @@ import { CargoSignedReqeuest } from './sign.model';
 import { CargoResourceRequest } from './request.dto';
 import { PermService } from '../perms/perms.service';
 import { TokenPayload } from '../auth/user.dto';
-import {CargoAccountService} from 'src/account/account.service';
+import { CargoAccountService } from 'src/account/account.service';
 
 @Injectable()
 export class SignService {
-
   constructor(private readonly permService: PermService, private readonly accountService: CargoAccountService) {}
 
   async signRequest(user: TokenPayload, request: CargoResourceRequest): Promise<CargoSignedReqeuest> {
