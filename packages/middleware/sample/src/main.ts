@@ -11,13 +11,13 @@ const CARGO_ENDPOINT = 'http://localhost:3000/graphql';
 
 // Function to get the JWT. This function will be called on every request.
 const getJWTToken: () => Promise<string> = async () => {
-  return process.env.JWT_TOKEN;
+  return process.env.JWT_TOKEN!;
 }
 
 async function main() {
   const client = new S3Client({
     forcePathStyle: true,
-
+    endpoint: 'https://minio.sail.codes',
     // The following need to exist for the S3 Client to work, but the values
     // themselves do not matter
     region: 'us-east-1',
