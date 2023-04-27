@@ -37,7 +37,6 @@ export class SignService {
 
     // Sign the request and returned the signed information
     const signedRequest = await signer.sign(request);
-    console.log(signedRequest)
     return {
       signature: signedRequest.headers.authorization,
       bodyHash: signedRequest.headers['x-amz-content-sha256'],
