@@ -26,12 +26,15 @@ type CargoPermissions {
   admin: Boolean!
 }
 
-type CargoSignedReqeuest {
+type CargoSignedRequest {
   """AWS Signature based on the request"""
   signature: String!
 
   """SHA256 Hashed Body"""
   bodyHash: String!
+
+  """AWS format timestamp"""
+  timestamp: String!
 }
 
 type Query {
@@ -45,7 +48,7 @@ type Query {
 
   """Means for the admin to get all permissions for a given bucket"""
   cargoGetAllBucketPermissions(bucket: String!): [CargoPermissions!]!
-  cargoSignRequest(request: CargoResourceRequest!): CargoSignedReqeuest!
+  cargoSignRequest(request: CargoResourceRequest!): CargoSignedRequest!
 }
 
 """Wrapper for AWS HttpRequest"""

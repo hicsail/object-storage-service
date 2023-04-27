@@ -48,14 +48,18 @@ const makeMiddleware: (config: CargoMiddlewareConfig) => S3MiddlewareType = (con
         cargoSignRequest(request: $request) {
           signature
           bodyHash
+          timestamp
         }
       }
     `;
 
     const response = await apolloClient.query({ query, variables: { request: args.request } });
-    const { signature, bodyHash } = response.data.cargoSignRequest;
+    const { signature, bodyHash, timestamp } = response.data.cargoSignRequest;
     args.request['headers']['authorization'] = signature;
     args.request['headers']['x-amz-content-sha256'] = bodyHash;
+    args.request['headers']['x-amz-date'] = timestamp;
+
+    console.log(args.request['headers']);
 
     // Do something with the args
     return next(args);
