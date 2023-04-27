@@ -1,7 +1,7 @@
 import { SignatureV4 } from '@aws-sdk/signature-v4';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Sha256 } from '@aws-crypto/sha256-js';
-import { CargoSignedReqeuest } from './sign.model';
+import { CargoSignedRequest } from './sign.model';
 import { CargoResourceRequest } from './request.dto';
 import { PermService } from '../perms/perms.service';
 import { TokenPayload } from '../auth/user.dto';
@@ -11,7 +11,7 @@ import { CargoAccountService } from 'src/account/account.service';
 export class SignService {
   constructor(private readonly permService: PermService, private readonly accountService: CargoAccountService) {}
 
-  async signRequest(user: TokenPayload, request: CargoResourceRequest): Promise<CargoSignedReqeuest> {
+  async signRequest(user: TokenPayload, request: CargoResourceRequest): Promise<CargoSignedRequest> {
     // Check if the user has access to the requested resource
     const isAllowed = await this.permService.hasAccess(user, request);
     if (!isAllowed) {
@@ -39,7 +39,8 @@ export class SignService {
     const signedRequest = await signer.sign(request);
     return {
       signature: signedRequest.headers.authorization,
-      bodyHash: signedRequest.headers['x-amz-content-sha256']
+      bodyHash: signedRequest.headers['x-amz-content-sha256'],
+      timestamp: signedRequest.headers['x-amz-date']
     };
   }
 }
