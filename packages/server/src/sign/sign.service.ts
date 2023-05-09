@@ -24,6 +24,12 @@ export class SignService {
       throw new BadRequestException(`No account found for project: ${user.projectId}`);
     }
 
+    // The signer will attempt to encode the path, therefore if the path
+    // comes in already encoded then the path get's double encoded. This
+    // throws off the signature resulting in a signature mismatch. Therefore
+    // the path is decoded here.
+    request.path = decodeURIComponent(request.path);
+
     // Make the SignatureV4 signer
     const signer = new SignatureV4({
       credentials: {
