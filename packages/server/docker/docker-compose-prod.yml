@@ -28,7 +28,7 @@ services:
     env_file:
     - ../../../stack.env
 volumes:
-  cargo-production:
+  cargo-mongo-production:
     external: true
   minio-production:
     external: true
