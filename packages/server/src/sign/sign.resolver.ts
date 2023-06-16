@@ -23,8 +23,7 @@ export class SignResolver {
 
   @UseGuards(JwtAuthGuard)
   @Query(() => String)
-  async cargoPresign(@Args('presignRequest') presignRequest: CargoPresignRequest): Promise<string> {
-
-    return 'hello';
+  async cargoPresign(@UserContext() user: TokenPayload, @Args('presignRequest') presignRequest: CargoPresignRequest): Promise<string> {
+    return this.signService.presignRequest(user, presignRequest);
   }
 }
