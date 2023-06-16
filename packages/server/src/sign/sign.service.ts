@@ -6,6 +6,9 @@ import { CargoResourceRequest } from './request.dto';
 import { PermService } from '../perms/perms.service';
 import { TokenPayload } from '../auth/user.dto';
 import { CargoAccountService } from 'src/account/account.service';
+import { CargoPresignRequest } from './presign.dto';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import {GetObjectCommand} from '@aws-sdk/client-s3';
 
 @Injectable()
 export class SignService {
@@ -48,5 +51,25 @@ export class SignService {
       bodyHash: signedRequest.headers['x-amz-content-sha256'],
       timestamp: signedRequest.headers['x-amz-date']
     };
+  }
+
+  /** Generates a presigned get object URL for users with read access */
+  async presignRequest(user: TokenPayload, request: CargoPresignRequest): Promise<string> {
+    // Ensure the user has read access
+    const userPermissions = await this.permService.getPermissionsForBucket(user, request.bucket);
+    if (!userPermissions || !userPermissions.read) {
+      throw new UnauthorizedException(`User cannot read from bucket ${request.bucket}`);
+    }
+
+    // Get the S3 account for the user
+    const account = await this.accountService.findByProject(user.projectId);
+    if (!account) {
+      throw new BadRequestException(`No account for for project: ${user.projectId}`);
+    }
+    const s3Client = account.getS3Client();
+
+    // Create the presigner
+    const command = new GetObjectCommand({ Bucket: request.bucket, Key: request.key });
+    return getSignedUrl(s3Client, command, { expiresIn: request.expires });
   }
 }
