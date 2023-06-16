@@ -6,6 +6,7 @@ import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { UserContext } from '../auth/user.decorator';
 import { TokenPayload } from '../auth/user.dto';
+import { CargoPresignRequest } from './presign.dto';
 
 @Resolver(() => CargoSignedRequest)
 export class SignResolver {
@@ -18,5 +19,14 @@ export class SignResolver {
     @Args('request') request: CargoResourceRequest
   ): Promise<CargoSignedRequest> {
     return this.signService.signRequest(user, request);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Query(() => String)
+  async cargoPresign(
+    @UserContext() user: TokenPayload,
+    @Args('presignRequest') presignRequest: CargoPresignRequest
+  ): Promise<string> {
+    return this.signService.presignRequest(user, presignRequest);
   }
 }
