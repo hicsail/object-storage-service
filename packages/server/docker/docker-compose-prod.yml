@@ -3,7 +3,6 @@ services:
   mongo:
     container_name: mongo-cargo-production
     image: mongo
-    ports: ["27024:27017"]
     restart: "always"
     volumes:
       - cargo-mongo-production:/data/db
