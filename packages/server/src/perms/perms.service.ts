@@ -8,12 +8,14 @@ import { TokenPayload } from '../auth/user.dto';
 import { isServiceAccount } from '../auth/service-account.guard';
 import { ListBucketsCommand } from '@aws-sdk/client-s3';
 import { CargoAccountService } from 'src/account/account.service';
+import { PublicService } from '../public/public.service';
 
 @Injectable()
 export class PermService {
   constructor(
     @InjectModel(CargoPermissions.name) private readonly permsModel: Model<CargoPermissionsDocument>,
-    private readonly accountService: CargoAccountService
+    private readonly accountService: CargoAccountService,
+    private readonly publicService: PublicService
   ) {}
 
   async find(id: mongoose.Types.ObjectId): Promise<CargoPermissions | null> {
@@ -40,7 +42,7 @@ export class PermService {
     // Return all permissions
     return Promise.all(
       listBuckets.Buckets.filter((bucket) => bucket.Name !== undefined).map((bucket) =>
-        this.getOrCreateDefault(user, bucket.Name!)
+        this.getOrCreateDefault(user.id, user.projectId, bucket.Name!)
       )
     );
   }
@@ -60,7 +62,7 @@ export class PermService {
    */
   async addUser(user: string, project: string): Promise<CargoPermissions[]> {
     // Make sure the user doesn't already exist
-    const existingUser = await this.permsModel.findOne({ user: user });
+    const existingUser = await this.permsModel.findOne({ user });
     if (existingUser) {
       throw new BadRequestException(`User ${user} already exists`);
     }
@@ -80,31 +82,19 @@ export class PermService {
 
     // For all buckets with names, make user permissions for that bucket
     return Promise.all(
-      buckets.filter((bucket) => bucket.Name !== undefined).map((bucket) => this.makePermissions(user, bucket.Name!))
+      buckets
+        .filter((bucket) => bucket.Name !== undefined)
+        .map((bucket) => this.getOrCreateDefault(user, project, bucket.Name!))
     );
   }
 
   async getPermissionsForBucket(user: TokenPayload, bucket: string): Promise<CargoPermissions | null> {
-    return this.getOrCreateDefault(user, bucket);
+    return this.getOrCreateDefault(user.id, user.projectId, bucket);
   }
 
   async getAllBucketPermissions(bucket: string): Promise<CargoPermissions[]> {
+    // TODO: Handle the public buckets
     return this.permsModel.find({ bucket: bucket }).exec();
-  }
-
-  /**
-   * Make permissions for the given user for the given bucket. Defaults to
-   * no access
-   */
-  async makePermissions(user: string, bucket: string): Promise<CargoPermissions> {
-    return this.permsModel.create({
-      user: user,
-      bucket: bucket,
-      read: false,
-      write: false,
-      delete: false,
-      admin: false
-    });
   }
 
   async changePermissions(
@@ -125,7 +115,7 @@ export class PermService {
     }
 
     // Get user permissions
-    const userPerms = await this.getOrCreateDefault(user, bucket);
+    const userPerms = await this.getOrCreateDefault(user.id, user.projectId, bucket);
 
     // Only bucket specified, handle bucket level access control
     if (bucket && object.length == 0) {
@@ -211,16 +201,23 @@ export class PermService {
    * the user, then the default permissions are created for the user and
    * returned.
    */
-  private async getOrCreateDefault(user: TokenPayload, bucket: string): Promise<CargoPermissions> {
-    const perms = await this.permsModel.findOne({ user: user.id, bucket: bucket });
+  private async getOrCreateDefault(user: string, project: string, bucket: string): Promise<CargoPermissions> {
+    // Determine if the bucket is public
+    const bucketIsPublic = await this.publicService.isPublic(bucket, project);
+
+    const perms = await this.permsModel.findOne({ user: user, bucket: bucket });
     if (perms) {
-      return perms;
+      // Change perms based on if the bucket is public
+      if (bucketIsPublic && !perms.read) {
+        await this.permsModel.updateOne({ _id: perms._id }, { $set: { read: true } });
+      }
+      return (await this.permsModel.findOne({ _id: perms._id }))!;
     }
 
     return this.permsModel.create({
-      user: user.id,
+      user: user,
       bucket: bucket,
-      read: false,
+      read: bucketIsPublic,
       write: false,
       delete: false,
       admin: false

@@ -9,6 +9,7 @@ import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/ap
 import { SignModule } from './sign/sign.module';
 import { AuthModule } from './auth/auth.module';
 import { CargoAccountModule } from './account/account.module';
+import { PublicModule } from './public/public.module';
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { CargoAccountModule } from './account/account.module';
         path: 'schema.gql'
       },
       driver: ApolloFederationDriver
-    })
+    }),
+    PublicModule
   ],
   providers: [AppService]
 })
