@@ -8,12 +8,14 @@ import { TokenPayload } from '../auth/user.dto';
 import { isServiceAccount } from '../auth/service-account.guard';
 import { ListBucketsCommand } from '@aws-sdk/client-s3';
 import { CargoAccountService } from 'src/account/account.service';
+import { PublicService } from '../public/public.service';
 
 @Injectable()
 export class PermService {
   constructor(
     @InjectModel(CargoPermissions.name) private readonly permsModel: Model<CargoPermissionsDocument>,
-    private readonly accountService: CargoAccountService
+    private readonly accountService: CargoAccountService,
+    private readonly publicService: PublicService
   ) {}
 
   async find(id: mongoose.Types.ObjectId): Promise<CargoPermissions | null> {
@@ -212,15 +214,22 @@ export class PermService {
    * returned.
    */
   private async getOrCreateDefault(user: TokenPayload, bucket: string): Promise<CargoPermissions> {
+    // Determine if the bucket is public
+    const bucketIsPublic = await this.publicService.isPublic(bucket, user.projectId);
+
     const perms = await this.permsModel.findOne({ user: user.id, bucket: bucket });
     if (perms) {
-      return perms;
+      // Change perms based on if the bucket is public
+      if (bucketIsPublic && !perms.read) {
+        await this.permsModel.updateOne({ _id: perms._id }, { $set: { read: true }});
+      }
+      return (await this.permsModel.findOne({ _id: perms._id }))!;
     }
 
     return this.permsModel.create({
       user: user.id,
       bucket: bucket,
-      read: false,
+      read: bucketIsPublic,
       write: false,
       delete: false,
       admin: false

@@ -21,6 +21,11 @@ export class PublicService {
     return !!record;
   }
 
+  async getPublicBuckets(project: string): Promise<string[]> {
+    const publicBuckets = await this.publicBucketModel.find({ project });
+    return publicBuckets.map((publicBucket) => publicBucket.bucket);
+  }
+
   private async makePublic(bucket: string, project: string) {
     // If already public, do nothing
     if (await this.isPublic(bucket, project)) {

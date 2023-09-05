@@ -6,6 +6,7 @@ import {PublicBucket, PublicBucketSchema} from './public.model';
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: PublicBucket.name, schema: PublicBucketSchema }])],
-  providers: [PublicService, PublicResolver]
+  providers: [PublicService, PublicResolver],
+  exports: [PublicService]
 })
 export class PublicModule {}

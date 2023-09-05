@@ -80,6 +80,7 @@ type Mutation {
   cargoChangePermissions(change: CargoPermissionChange!, user: String!, bucket: String!): CargoPermissions!
   cargoServiceAddUser(user: String!, project: String!): [CargoPermissions!]!
   cargoServiceChangePermissions(change: CargoPermissionChange!, user: String!, bucket: String!): CargoPermissions!
+  cargoMarkBucketPublic(bucket: String!, markPublic: Boolean!): Boolean!
 }
 
 input CargoPermissionChange {
