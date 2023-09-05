@@ -82,7 +82,9 @@ export class PermService {
 
     // For all buckets with names, make user permissions for that bucket
     return Promise.all(
-      buckets.filter((bucket) => bucket.Name !== undefined).map((bucket) => this.getOrCreateDefault(user, project, bucket.Name!))
+      buckets
+        .filter((bucket) => bucket.Name !== undefined)
+        .map((bucket) => this.getOrCreateDefault(user, project, bucket.Name!))
     );
   }
 
@@ -207,7 +209,7 @@ export class PermService {
     if (perms) {
       // Change perms based on if the bucket is public
       if (bucketIsPublic && !perms.read) {
-        await this.permsModel.updateOne({ _id: perms._id }, { $set: { read: true }});
+        await this.permsModel.updateOne({ _id: perms._id }, { $set: { read: true } });
       }
       return (await this.permsModel.findOne({ _id: perms._id }))!;
     }

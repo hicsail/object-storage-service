@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { PublicService } from './public.service';
 import { PublicResolver } from './public.resolver';
-import {MongooseModule} from '@nestjs/mongoose';
-import {PublicBucket, PublicBucketSchema} from './public.model';
+import { MongooseModule } from '@nestjs/mongoose';
+import { PublicBucket, PublicBucketSchema } from './public.model';
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: PublicBucket.name, schema: PublicBucketSchema }])],
